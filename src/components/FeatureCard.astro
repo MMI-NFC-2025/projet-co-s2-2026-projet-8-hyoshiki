@@ -1,0 +1,17 @@
+---
+const { icon, title, description } = Astro.props;
+---
+
+<div
+    class="flex h-full flex-col gap-3 rounded-2xl border border-black/5 bg-white p-6 shadow-soft"
+>
+    {
+        icon ? (
+            <img src={icon.src} alt="" class="h-12 w-12" loading="lazy" />
+        ) : (
+            <div class="h-12 w-12 rounded bg-black" aria-hidden="true" />
+        )
+    }
+    <h3 class="font-title text-lg text-black">{title}</h3>
+    <p class="text-sm leading-relaxed text-black">{description}</p>
+</div>
