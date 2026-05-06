@@ -148,7 +148,7 @@ const team = [
 		name: "MATIAS",
 		role: "Design",
 		description:
-			"Matias est le magicien visuel qui donne vie aux aventures de Shiki et Hyo avec son trait unique. Il conçoit une interface colorée et des illustrations pédagogiques qui rendent la langue des signes instinctive et ludique.",
+			"Matias est le designer de l'expérience utilisateur. Il conçoit une interface colorée et des illustrations pédagogiques qui rendent la langue des signes instinctive et ludique.",
 	},
 ];
 ---
@@ -269,7 +269,7 @@ const team = [
 		</div>
 	</section>
 
-	<section class="relative overflow-hidden py-14">
+	<section class="relative overflow-hidden py-14 pb-28 md:pb-40" style="background:var(--blue);">
 		<img
 			src={shapeMid.src}
 			alt="forme bleue"
@@ -291,6 +291,11 @@ const team = [
 					</div>
 				))
 			}
+		</div>
+		<div class="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none" style="height:160px;">
+			<svg class="w-full h-full" viewBox="0 0 1200 160" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M0,0 C175,125 375,125 600,80 C825,35 1025,130 1200,70 L1200,160 L0,160 Z" fill="var(--white)"></path>
+			</svg>
 		</div>
 	</section>
 
@@ -317,8 +322,13 @@ const team = [
 		</div>
 	</section>
 
-	<section id="cta" class="bg-blue py-16">
-		<div class="mx-auto max-w-4xl px-6 text-center text-white">
+	<section id="cta" class="relative overflow-hidden bg-blue py-24 md:py-32">
+		<div class="absolute top-0 left-0 w-full overflow-hidden pointer-events-none" style="height:120px; transform-origin:center; transform: translateY(-30px) rotate(180deg);">
+			<svg class="w-full h-full" viewBox="0 0 1200 160" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M0,0 C175,125 375,125 600,80 C825,35 1025,130 1200,70 L1200,160 L0,160 Z" fill="var(--white)"></path>
+			</svg>
+		</div>
+		<div class="mx-auto max-w-4xl px-6 text-center text-white relative z-10">
 			<h2 class="font-title text-3xl md:text-4xl">
 				Prêt à commencer votre aventure LSF ?
 			</h2>
@@ -335,6 +345,11 @@ const team = [
 					Commencer Maintenant
 				</Button>
 			</div>
+		</div>
+		<div class="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none" style="height:120px; transform: translateY(30px);">
+			<svg class="w-full h-full" viewBox="0 0 1200 160" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M0,0 C175,125 375,125 600,80 C825,35 1025,130 1200,70 L1200,160 L0,160 Z" fill="var(--white)"></path>
+			</svg>
 		</div>
 	</section>
 
