@@ -1,11 +1,359 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
+import Button from "../components/Button.astro";
+import Header from "../components/Header.astro";
+import FeatureCard from "../components/FeatureCard.astro";
+import ModeCard from "../components/ModeCard.astro";
+import StatItem from "../components/StatItem.astro";
+import AvatarCard from "../components/AvatarCard.astro";
+import Footer from "../components/Footer.astro";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import logo from "../assets/img/logo.svg";
+import hyo from "../assets/img/Hyo.svg";
+import shiki from "../assets/img/Shiki.svg";
+import shapeHero from "../assets/img/forme_bleu.svg";
+import shapeTop from "../assets/img/forme_bleu2.svg";
+import shapeMid from "../assets/img/forme_bleu3.svg";
+
+import iconVisual from "../assets/img/logo.svg";
+import iconProgress from "../assets/img/logo1.svg";
+import iconPlay from "../assets/img/logo2.svg";
+import iconStories from "../assets/img/logo4.svg";
+import iconModeLessons from "../assets/img/logo_7.svg";
+import iconRewards from "../assets/img/logo5.svg";
+import iconCommunity from "../assets/img/logo6.svg";
+
+import avatarKonstance from "../assets/img/konstance_avatar.svg";
+import avatarMatthis from "../assets/img/matthis_avatar.svg";
+import avatarMatias from "../assets/img/matias_avatar.svg";
+
+const features = [
+	{
+		icon: iconVisual,
+		title: "Apprentissage Visuel",
+		description:
+			"Mémorisez facilement grâce à des illustrations et animations captivantes",
+	},
+	{
+		icon: iconProgress,
+		title: "Méthode Progressive",
+		description:
+			"Avancez à votre rythme avec un système de déblocage adaptatif",
+	},
+	{
+		icon: iconPlay,
+		title: "Ludique & Engageant",
+		description:
+			"5 mini-jeux différents pour ne jamais s'ennuyer en apprenant",
+	},
+	{
+		icon: iconStories,
+		title: "Histoires Immersives",
+		description: "Apprenez en suivant des aventures narratives captivantes",
+	},
+	{
+		icon: iconRewards,
+		title: "Système de Récompenses",
+		description:
+			"Gagnez des XP, débloquez des succès et suivez votre progression",
+	},
+	{
+		icon: iconCommunity,
+		title: "Communauté Active",
+		description:
+			"Rejoignez des milliers d'apprenants passionnés par la LSF",
+	},
+];
+
+const modes = [
+	{
+		icon: iconStories,
+		title: "Aventures illustrées",
+		iconClass: "h-14 w-14",
+		description:
+			"Suivez des histoires captivantes avec Hyo et Shiki. Apprenez naturellement en découvrant la LSF à travers des scénarios du quotidien.",
+		bullets: [
+			"12 chapitres narratifs",
+			"Dialogues interactifs",
+			"Illustrations immersives",
+		],
+	},
+	{
+		icon: iconModeLessons,
+		title: "Leçons thématiques",
+		description:
+			"Apprenez par catégories : chambre, cuisine, famille... Chaque leçon combine découverte et exercices pratiques.",
+		bullets: [
+			"12 thématiques variées",
+			"Apprentissage structuré",
+			"Quiz de validation",
+		],
+	},
+	{
+		icon: iconPlay,
+		title: "Arcade et défis",
+		iconClass: "h-14 w-14",
+		description:
+			"5 mini-jeux addictifs pour réviser en s'amusant. Swipe, Memory, Puzzle, Quiz et Contre-la-montre !",
+		bullets: [
+			"5 types de mini-jeux",
+			"Plusieurs niveaux de difficulté",
+			"Défis quotidiens",
+		],
+	},
+	{
+		icon: iconRewards,
+		title: "Progression et succès",
+		iconClass: "h-14 w-14",
+		description:
+			"Suivez votre évolution, débloquez des succès et maintenez votre série d'apprentissage quotidien.",
+		bullets: [
+			"Système de niveaux et XP",
+			"Badges et récompenses",
+			"Statistiques détaillées",
+		],
+	},
+];
+
+const heroStats = [
+	{ value: "10K +", label: "Apprenants actifs" },
+	{ value: "500+", label: "Mots LSF" },
+	{ value: "4.9/5", label: "Note moyenne" },
+];
+
+const megaStats = [
+	{ value: "500+", label: "Mots LSF" },
+	{ value: "12", label: "Chapitres narratifs" },
+	{ value: "5", label: "Mini-jeux uniques" },
+	{ value: "10K+", label: "Utilisateurs actifs" },
+];
+
+const team = [
+	{
+		avatar: avatarKonstance,
+		name: "KONSTANCE",
+		role: "Communication",
+		description:
+			"Passionnée par le partage et l'image, Konstance fait rayonner l'univers de Hyoshiki sur tous nos réseaux. Elle crée le lien entre notre communauté et l'apprentissage de la LSF à travers des contenus créatifs et engageants.",
+	},
+	{
+		avatar: avatarMatthis,
+		name: "MATTHIS",
+		role: "Developpement technique",
+		description:
+			"Garant de la fluidité et de la technique, Matthis transforme nos idées en une plateforme interactive et sécurisée. Il veille à ce que chaque ligne de code serve l'accessibilité et le plaisir d'apprendre pour tous nos utilisateurs.",
+	},
+	{
+		avatar: avatarMatias,
+		name: "MATIAS",
+		role: "Design",
+		description:
+			"Matias est le magicien visuel qui donne vie aux aventures de Shiki et Hyo avec son trait unique. Il conçoit une interface colorée et des illustrations pédagogiques qui rendent la langue des signes instinctive et ludique.",
+	},
+];
 ---
 
-<Layout>
-	<Welcome />
+<Layout
+	title="Odysignes - Apprendre la LSF"
+	description="Apprenez la langue des signes en vous amusant."
+>
+	<div class="bg-[#e9f9ff]">
+		<Header logoSrc={logo.src} />
+
+		<section class="relative overflow-hidden">
+			<img
+				src={shapeHero.src}
+				alt=""
+				class="absolute right-0 top-10 hidden w-[520px] md:block"
+			/>
+			<div
+				class="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 md:grid-cols-[1.1fr_1fr]"
+			>
+				<div class="space-y-6">
+					<h1
+						class="font-title text-4xl leading-tight text-black md:text-5xl"
+					>
+						Apprenez la <span class="text-blue"
+							>Langue des signes</span
+						> en vous amusant
+					</h1>
+					<p
+						class="max-w-xl text-base leading-relaxed text-black font-body"
+					>
+						Odysignes révolutionne l'apprentissage de la LSF avec
+						des aventures narratives, des leçons thématiques et des
+						mini-jeux captivants. Rejoignez Hyo et Shiki dans cette
+						aventure linguistique unique !
+					</p>
+					<Button href="#cta" size="lg" class="rounded-xl font-normal"
+						>Commencer l'aventure</Button
+					>
+					<div class="grid max-w-md grid-cols-3 gap-6 pt-4 font-body">
+						{
+							heroStats.map((stat) => (
+								<StatItem
+									value={stat.value}
+									label={stat.label}
+								/>
+							))
+						}
+					</div>
+				</div>
+				<div class="relative flex items-center justify-center">
+					<div class="relative flex items-end gap-6">
+						<img src={hyo.src} alt="Hyo" class="h-[360px] w-auto" />
+						<img
+							src={shiki.src}
+							alt="Shiki"
+							class="h-[340px] w-auto"
+						/>
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<section id="fonctionnalites" class="relative overflow-hidden py-16">
+		<img
+			src={shapeTop.src}
+			alt=""
+			class="absolute left-0 top-0 hidden w-[560px] z-0 md:block"
+		/>
+		<div class="relative z-10 mx-auto max-w-6xl px-6">
+			<div class="text-center">
+				<h2 class="font-title text-[3.25rem] text-black">
+					Pourquoi choisir <span class="text-blue">Odysignes</span> ?
+				</h2>
+				<p class="mt-3 text-sm text-black">
+					Une approche innovante qui combine narration, gamification
+					et apprentissage adaptatif
+				</p>
+			</div>
+			<div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+				{
+					features.map((feature) => (
+						<FeatureCard
+							icon={feature.icon}
+							title={feature.title}
+							description={feature.description}
+						/>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<section id="apprentissage" class="bg-[#e9f9ff] py-16">
+		<div class="mx-auto max-w-6xl px-6">
+			<div class="text-center">
+				<h2 class="font-title text-[3.25rem] text-black">
+					4 Modes d'apprentissage
+				</h2>
+				<p class="mt-2 text-sm text-black/60">
+					Choisissez le mode qui correspond à votre style
+					d'apprentissage
+				</p>
+			</div>
+			<div class="mt-10 grid gap-6 md:grid-cols-2">
+				{
+					modes.map((mode) => (
+						<ModeCard
+							icon={mode.icon}
+							title={mode.title}
+							description={mode.description}
+							bullets={mode.bullets}
+						/>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<section class="relative overflow-hidden py-14">
+		<img
+			src={shapeMid.src}
+			alt="forme bleue"
+			class="absolute left-0 -top-32 w-full h-auto pointer-events-none select-none -z-10"
+			style="min-width:520px; max-width:100%;"
+		/>
+		<div
+			class="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-6 text-white md:grid-cols-4"
+		>
+			{
+				megaStats.map((stat) => (
+					<div class="text-center">
+						<p class="text-5xl font-bold md:text-6xl">
+							{stat.value}
+						</p>
+						<p class="text-base md:text-lg uppercase tracking-wide text-white font-semibold mt-2 font-fredoka">
+							{stat.label}
+						</p>
+					</div>
+				))
+			}
+		</div>
+	</section>
+
+	<section class="bg-white py-16">
+		<div class="mx-auto max-w-4xl px-6 text-center">
+			<h2 class="font-title text-3xl text-black md:text-4xl">
+				L'apprentissage de la LSF, <span class="text-blue"
+					>réinventé</span
+				>
+			</h2>
+			<p class="mt-4 text-base leading-relaxed text-black/70">
+				Odysignes est née d'une conviction : apprendre la langue des
+				signes française doit être accessible, ludique et motivant.
+				Inspiré par les meilleures applications d'apprentissage
+				linguistique, nous avons créé une expérience unique qui s'adapte
+				à votre style d'apprentissage visuel.
+			</p>
+			<p class="mt-4 text-base leading-relaxed text-black/70">
+				Que vous soyez débutant complet ou que vous souhaitiez
+				perfectionner vos connaissances, Hyoshiki vous accompagne à
+				chaque étape avec Hyo et Shiki, vos compagnons d'aventure
+				virtuels.
+			</p>
+		</div>
+	</section>
+
+	<section id="cta" class="bg-blue py-16">
+		<div class="mx-auto max-w-4xl px-6 text-center text-white">
+			<h2 class="font-title text-3xl md:text-4xl">
+				Prêt à commencer votre aventure LSF ?
+			</h2>
+			<p class="mt-3 text-base text-white/90">
+				Rejoignez des milliers d'apprenants dès aujourd'hui.
+			</p>
+			<div class="mt-6 flex justify-center">
+				<Button
+					href="#"
+					variant="outline"
+					size="lg"
+					class="bg-white text-blue rounded-xl px-8 py-3 font-fredoka text-lg shadow-md border-2 border-blue hover:bg-blue/10 transition-colors duration-200"
+				>
+					Commencer Maintenant
+				</Button>
+			</div>
+		</div>
+	</section>
+
+	<section class="bg-white py-16">
+		<div class="mx-auto max-w-6xl px-6">
+			<div class="grid gap-8 md:grid-cols-3">
+				{
+					team.map((member) => (
+						<AvatarCard
+							avatar={member.avatar}
+							name={member.name}
+							role={member.role}
+							description={member.description}
+						/>
+					))
+				}
+			</div>
+		</div>
+	</section>
+
+	<Footer logoSrc={logo.src} />
 </Layout>

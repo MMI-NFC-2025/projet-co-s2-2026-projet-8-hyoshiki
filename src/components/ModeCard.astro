@@ -1,0 +1,42 @@
+---
+import checkmark from "../assets/img/checkmark.svg";
+
+const {
+    icon,
+    title,
+    description,
+    bullets,
+    iconClass = "h-12 w-12",
+} = Astro.props;
+---
+
+<div
+    class="flex h-full flex-col gap-4 rounded-2xl bg-blue px-6 py-7 text-white shadow-soft"
+>
+    {
+        icon ? (
+            <img src={icon.src} alt="" class={iconClass} loading="lazy" />
+        ) : (
+            <div class={iconClass + " rounded bg-black"} aria-hidden="true" />
+        )
+    }
+    <div class="space-y-2">
+        <h3 class="font-title text-lg">{title}</h3>
+        <p class="text-sm leading-relaxed text-white/90">{description}</p>
+        <ul class="space-y-1 text-sm text-white/90">
+            {
+                bullets?.map((item) => (
+                    <li class="flex items-start gap-2">
+                        <img
+                            src={checkmark.src}
+                            alt=""
+                            class="mt-0.5 h-4 w-4"
+                            loading="lazy"
+                        />
+                        <span>{item}</span>
+                    </li>
+                ))
+            }
+        </ul>
+    </div>
+</div>
