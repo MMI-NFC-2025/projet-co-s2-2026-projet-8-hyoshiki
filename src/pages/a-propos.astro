@@ -1,9 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
+import Header from "../components/Header_promo.astro";
+import FooterPromo from "../components/Footer_promo.astro";
 
 import logo from "../assets/img/logo.svg";
+import logoOdysigne from "../assets/img/Logo_odysigne.svg";
 import avatarKonstance from "../assets/img/konstance_avatar.svg";
 import avatarMatthis from "../assets/img/matthis_avatar.svg";
 import avatarMatias from "../assets/img/matias_avatar.svg";
@@ -20,9 +21,9 @@ import avatarMatias from "../assets/img/matias_avatar.svg";
 			<section class="text-center">
 				<div class="mx-auto flex h-32 w-32 items-center justify-center rounded-full border-2 border-blue bg-white shadow-soft sm:h-36 sm:w-36">
 					<img
-						src={logo.src}
+						src={logoOdysigne.src}
 						alt="Logo Odysignes"
-						class="h-20 w-20 sm:h-24 sm:w-24"
+						class="h-20 w-auto max-w-full -translate-x-0.5 object-contain sm:h-24"
 					/>
 				</div>
 				<h1 class="mt-6 font-title text-4xl text-blue sm:text-5xl">
@@ -145,6 +146,7 @@ import avatarMatias from "../assets/img/matias_avatar.svg";
 			</section>
 		</main>
 
-		<Footer logoSrc={logo.src} />
+		<FooterPromo logoSrc={logo.src} />
 	</div>
 </Layout>
+
