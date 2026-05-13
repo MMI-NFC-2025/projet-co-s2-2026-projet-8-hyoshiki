@@ -1,0 +1,150 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+import logo from "../assets/img/logo.svg";
+import avatarKonstance from "../assets/img/konstance_avatar.svg";
+import avatarMatthis from "../assets/img/matthis_avatar.svg";
+import avatarMatias from "../assets/img/matias_avatar.svg";
+---
+
+<Layout
+	title="Odysignes - À propos"
+	description="Découvrez la mission, l'équipe et l'approche d'Odysignes."
+>
+	<div class="bg-white">
+		<Header logoSrc={logo.src} />
+
+		<main class="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6">
+			<section class="text-center">
+				<div class="mx-auto flex h-32 w-32 items-center justify-center rounded-full border-2 border-blue bg-white shadow-soft sm:h-36 sm:w-36">
+					<img
+						src={logo.src}
+						alt="Logo Odysignes"
+						class="h-20 w-20 sm:h-24 sm:w-24"
+					/>
+				</div>
+				<h1 class="mt-6 font-title text-4xl text-blue sm:text-5xl">
+					ODYSIGNES
+				</h1>
+				<p class="mx-auto mt-3 max-w-sm text-base leading-7 text-black/80 sm:max-w-xl sm:text-lg">
+					L'application qui révolutionne l'apprentissage de la langue des
+					signes française
+				</p>
+			</section>
+
+			<section class="mt-8 rounded-[2rem] bg-blue px-5 py-6 text-white shadow-soft sm:px-7 sm:py-7">
+				<div class="flex items-center gap-3">
+					<span class="flex h-12 w-12 items-center justify-center rounded-full border border-white/25 bg-white/10">
+						<svg viewBox="0 0 48 48" class="h-7 w-7 text-white" aria-hidden="true" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<circle cx="24" cy="24" r="10" stroke="currentColor" stroke-width="2.5" opacity="0.95" />
+							<circle cx="24" cy="24" r="4" fill="currentColor" opacity="0.9" />
+							<circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="1.5" opacity="0.25" />
+						</svg>
+					</span>
+					<h2 class="font-title text-3xl sm:text-4xl">Notre mission</h2>
+				</div>
+				<p class="mt-4 text-sm leading-7 text-white/95 sm:text-base">
+					Rendre l'apprentissage de la langue des signes française accessible,
+					ludique et motivant pour tous. Nous croyons que chacun devrait
+					pouvoir communiquer sans barrières. Inspirés par Duolingo et
+					adaptés aux besoins spécifiques de l'apprentissage visuel, nous
+					combinons narration, gamification et pédagogie pour créer une
+					expérience unique.
+				</p>
+			</section>
+
+			<section class="mt-10">
+				<div class="flex items-center gap-3">
+					<span class="flex h-11 w-11 items-center justify-center rounded-full bg-blue/15 text-blue shadow-soft">
+						<svg viewBox="0 0 48 48" class="h-6 w-6" aria-hidden="true" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M10 18c0-2.2 1.8-4 4-4h20c2.2 0 4 1.8 4 4v12c0 2.2-1.8 4-4 4H24l-6.5 5v-5H14c-2.2 0-4-1.8-4-4V18Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" />
+							<path d="M17 21h14M17 27h9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+						</svg>
+					</span>
+					<h2 class="font-title text-3xl text-blue sm:text-4xl">L'équipe</h2>
+				</div>
+
+				<div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+					<article class="rounded-[1.6rem] border border-black/5 bg-white px-4 py-5 text-center shadow-soft sm:px-5">
+						<img src={avatarKonstance.src} alt="Konstance" class="mx-auto h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20" loading="lazy" />
+						<p class="mt-4 font-title text-[0.85rem] uppercase tracking-wide text-black sm:text-base">Konstance</p>
+						<p class="text-[0.72rem] text-black/55 sm:text-sm">Communication</p>
+						<p class="mt-3 text-[0.72rem] leading-5 text-black/70 sm:text-sm">
+							Passionnée par le partage et l'image, elle fait rayonner l'univers d'Odysignes à travers des contenus créatifs et engageants.
+						</p>
+					</article>
+
+					<article class="rounded-[1.6rem] border border-black/5 bg-white px-4 py-5 text-center shadow-soft sm:px-5">
+						<img src={avatarMatthis.src} alt="Matthis" class="mx-auto h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20" loading="lazy" />
+						<p class="mt-4 font-title text-[0.85rem] uppercase tracking-wide text-black sm:text-base">Matthis</p>
+						<p class="text-[0.72rem] text-black/55 sm:text-sm">Développement technique</p>
+						<p class="mt-3 text-[0.72rem] leading-5 text-black/70 sm:text-sm">
+							Garant de la fluidité et de la technique, il veille à une plateforme interactive, sûre et agréable à utiliser.
+						</p>
+					</article>
+
+					<article class="rounded-[1.6rem] border border-black/5 bg-white px-4 py-5 text-center shadow-soft sm:px-5">
+						<img src={avatarMatias.src} alt="Matias" class="mx-auto h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20" loading="lazy" />
+						<p class="mt-4 font-title text-[0.85rem] uppercase tracking-wide text-black sm:text-base">Matias</p>
+						<p class="text-[0.72rem] text-black/55 sm:text-sm">Design</p>
+						<p class="mt-3 text-[0.72rem] leading-5 text-black/70 sm:text-sm">
+							Il imagine une interface colorée et claire, pensée pour rendre la langue des signes instinctive et ludique.
+						</p>
+					</article>
+				</div>
+			</section>
+
+			<section class="mt-12 rounded-[2rem] bg-blue px-5 py-6 text-white shadow-soft sm:px-7 sm:py-7">
+				<div class="flex items-center gap-3">
+					<span class="flex h-12 w-12 items-center justify-center rounded-full border border-white/25 bg-white/10">
+						<svg viewBox="0 0 48 48" class="h-7 w-7 text-white" aria-hidden="true" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M12 15.5A2.5 2.5 0 0 1 14.5 13h19A2.5 2.5 0 0 1 36 15.5v17A2.5 2.5 0 0 1 33.5 35h-19A2.5 2.5 0 0 1 12 32.5v-17Z" stroke="currentColor" stroke-width="2.5" />
+							<path d="M18 13v22M30 13v22M12 21h24M12 29h24" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+						</svg>
+					</span>
+					<h2 class="font-title text-3xl leading-tight sm:text-4xl">
+						Ce qui nous rend unique
+					</h2>
+				</div>
+
+				<div class="mt-6 grid gap-4 sm:grid-cols-2">
+					<div class="rounded-[1.5rem] border border-white/15 bg-white/10 p-4 shadow-soft backdrop-blur-sm">
+						<div class="flex items-center gap-3">
+							<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-blue font-title text-lg">1</span>
+							<h3 class="font-title text-xl sm:text-[1.65rem]">Apprentissage narratif</h3>
+						</div>
+						<p class="mt-3 text-sm leading-6 text-white/95 sm:text-base">Des histoires immersives avec Hyo et Shiki</p>
+					</div>
+
+					<div class="rounded-[1.5rem] border border-white/15 bg-white/10 p-4 shadow-soft backdrop-blur-sm">
+						<div class="flex items-center gap-3">
+							<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-blue font-title text-lg">2</span>
+							<h3 class="font-title text-xl sm:text-[1.65rem]">Gamification poussée</h3>
+						</div>
+						<p class="mt-3 text-sm leading-6 text-white/95 sm:text-base">5 types de mini-jeux pour ne jamais s'ennuyer</p>
+					</div>
+
+					<div class="rounded-[1.5rem] border border-white/15 bg-white/10 p-4 shadow-soft backdrop-blur-sm">
+						<div class="flex items-center gap-3">
+							<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-blue font-title text-lg">3</span>
+							<h3 class="font-title text-xl sm:text-[1.65rem]">Leçons thématiques</h3>
+						</div>
+						<p class="mt-3 text-sm leading-6 text-white/95 sm:text-base">Apprenez par catégories du quotidien</p>
+					</div>
+
+					<div class="rounded-[1.5rem] border border-white/15 bg-white/10 p-4 shadow-soft backdrop-blur-sm">
+						<div class="flex items-center gap-3">
+							<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-blue font-title text-lg">4</span>
+							<h3 class="font-title text-xl sm:text-[1.65rem]">Progression adaptative</h3>
+						</div>
+						<p class="mt-3 text-sm leading-6 text-white/95 sm:text-base">Avancez à votre rythme avec un système intelligent</p>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<Footer logoSrc={logo.src} />
+	</div>
+</Layout>
