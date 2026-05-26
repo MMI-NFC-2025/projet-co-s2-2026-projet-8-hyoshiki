@@ -6,7 +6,11 @@ const { logoSrc } = Astro.props;
 
 <header class="border-b border-black/5 bg-white/90 backdrop-blur">
     <div class="mx-auto flex max-w-6xl items-center px-6 py-6">
-        <a href="/" class="flex items-center gap-3" aria-label="Retour à l'accueil">
+        <a
+            href="/"
+            class="flex items-center gap-3"
+            aria-label="Retour à l'accueil"
+        >
             <span class="font-title text-2xl text-blue">Odysignes</span>
         </a>
         <div class="ml-auto flex items-center gap-6">
@@ -20,17 +24,9 @@ const { logoSrc } = Astro.props;
                     >Apprentissage</a
                 >
                 <a href="/contact" class="hover:text-purple">Contact</a>
+                <a href="/login" class="hover:text-purple">Se connecter</a>
+                <a href="/register" class="hover:text-purple">S'inscrire</a>
             </nav>
-            <Button
-                href="#cta"
-                size="sm"
-                class="hidden rounded-xl px-5 py-2.5 md:inline-flex"
-            >
-                Commencer Maintenant
-            </Button>
-            <Button href="#cta" size="sm" class="rounded-xl md:hidden"
-                >Commencer</Button
-            >
         </div>
     </div>
 </header>
