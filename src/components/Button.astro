@@ -1,29 +1,41 @@
 ---
 const {
-    href = "#",
+    text,
+    url,
     variant = "primary",
-    size = "md",
-    class: className = "",
+    size = "normal",
+    icon,
+    className,
+    type,
 } = Astro.props;
 
-const base =
-    "inline-flex items-center justify-center rounded-full font-semibold transition duration-200";
-const variants = {
-    primary:
-        "bg-gradient-to-r from-blue to-purple text-white shadow-soft hover:opacity-90",
-    ghost: "text-black hover:text-purple",
-    outline: "border-2 border-blue text-black hover:bg-blue/10",
+const baseClasses = "font-bold rounded-full transition-colors duration-300";
+
+const sizeClasses = {
+    normal: "py-3 px-6 text-lg",
+    large: "py-4 px-8 text-xl",
 };
-const sizes = {
-    sm: "px-4 py-2 text-sm",
-    md: "px-5 py-3 text-base",
-    lg: "px-6 py-3.5 text-lg",
+
+const variantClasses = {
+    primary: "bg-white text-cyan-400 hover:bg-gray-200",
+    secondary: "bg-black bg-opacity-20 text-white hover:bg-opacity-30",
+    white: "bg-white text-cyan-500 hover:bg-gray-100",
 };
+
+const Tag = url ? "a" : "button";
 ---
 
-<a
-    href={href}
-    class={`${base} ${variants[variant] ?? variants.primary} ${sizes[size] ?? sizes.md} ${className}`}
+<Tag
+    href={url}
+    type={Tag === "button" ? type || "button" : undefined}
+    class:list={[
+        baseClasses,
+        sizeClasses[size],
+        variantClasses[variant],
+        className,
+        "flex items-center justify-center gap-2",
+    ]}
 >
-    <slot />
-</a>
+    {icon && <iconify-icon icon={icon} class="text-2xl" />}
+    <span>{text}</span>
+</Tag>

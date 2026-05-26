@@ -3,68 +3,145 @@ import logoOdysigne from "../assets/img/Logo_odysigne.svg";
 ---
 
 <header class="bg-blue text-white py-12 shadow-md relative">
-    <div class="mx-auto max-w-6xl px-6 flex items-center justify-center relative">
+    <div
+        class="mx-auto max-w-6xl px-6 flex items-center justify-center relative"
+    >
         <div class="flex items-center gap-3 absolute left-6">
-            <div class="h-12 w-12 bg-white rounded-full flex items-center justify-center">
-                <img src={logoOdysigne.src} alt="Logo Odysignes" class="h-8 w-8 object-contain" />
+            <div
+                class="h-12 w-12 bg-white rounded-full flex items-center justify-center"
+            >
+                <img
+                    src={logoOdysigne.src}
+                    alt="Logo Odysignes"
+                    class="h-8 w-8 object-contain"
+                />
             </div>
         </div>
         <span class="font-title text-3xl font-bold">ODYSIGNES</span>
-        <button id="menuToggle" class="md:hidden absolute right-6" aria-label="Menu">
-            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16" />
+        <button
+            id="menuToggle"
+            class="md:hidden absolute right-6"
+            aria-label="Menu"
+        >
+            <svg
+                class="w-10 h-10"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
         </button>
     </div>
 
     <!-- Wave at bottom of header -->
-    <div class="pointer-events-none absolute left-0 bottom-0 w-full overflow-hidden" style="height:90px; z-index: 0; transform: translateY(53%) scaleY(-1);">
-        <svg class="w-full h-full" viewBox="0 0 1200 160" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M0,80 C175,5 375,5 600,50 C825,95 1025,-10 1200,60 L1200,160 L0,160 Z" fill="var(--blue)"></path>
+    <div
+        class="pointer-events-none absolute left-0 bottom-0 w-full overflow-hidden"
+        style="height:90px; z-index: 0; transform: translateY(53%) scaleY(-1);"
+    >
+        <svg
+            class="w-full h-full"
+            viewBox="0 0 1200 160"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+        >
+            <path
+                d="M0,80 C175,5 375,5 600,50 C825,95 1025,-10 1200,60 L1200,160 L0,160 Z"
+                fill="var(--blue)"></path>
         </svg>
     </div>
 
     <!-- Mobile Menu -->
-    <div id="mobileMenu" class="mobileMenuHidden fixed inset-0 bg-cyan-400 z-50 md:hidden flex flex-col justify-center items-center px-6">
-        <div class="flex flex-col gap-6 text-white text-right ml-auto mr-6 w-full">
-            <button id="menuClose" class="flex items-center gap-2 text-white text-lg font-body mb-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+    <div
+        id="mobileMenu"
+        class="mobileMenuHidden fixed inset-0 bg-cyan-400 z-50 md:hidden flex flex-col justify-center items-center px-6"
+    >
+        <div
+            class="flex flex-col gap-6 text-white text-right ml-auto mr-6 w-full"
+        >
+            <button
+                id="menuClose"
+                class="flex items-center gap-2 text-white text-lg font-body mb-2"
+            >
+                <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 19l-7-7 7-7"></path>
                 </svg>
                 Retour
             </button>
 
             <nav class="flex flex-col gap-6 text-white text-right">
-                <a href="/aventure" class="font-body text-[30px] font-light hover:underline">Aventure</a>
-            <a href="/arcade" class="font-body text-[30px] font-light hover:underline">Arcade & défis</a>
-            <a href="/lecons" class="font-body text-[30px] font-light hover:underline">Leçons</a>
-            <a href="/dictionnaire" class="font-body text-[30px] font-light hover:underline">Dictionnaire</a>
-            <a href="/a-propos" class="font-body text-[30px] font-light hover:underline">À propos</a>
-            <a href="/contact" class="font-body text-[30px] font-light hover:underline">Contact</a>
-            <a href="/mon-compte" class="font-body text-[30px] font-light hover:underline">Mon compte</a>
+                <a
+                    href="/aventure"
+                    class="font-body text-[30px] font-light hover:underline"
+                    >Aventure</a
+                >
+                <a
+                    href="/arcade"
+                    class="font-body text-[30px] font-light hover:underline"
+                    >Arcade & défis</a
+                >
+                <a
+                    href="/lecons"
+                    class="font-body text-[30px] font-light hover:underline"
+                    >Leçons</a
+                >
+                <a
+                    href="/dictionnaire"
+                    class="font-body text-[30px] font-light hover:underline"
+                    >Dictionnaire</a
+                >
+                <a
+                    href="/a-propos"
+                    class="font-body text-[30px] font-light hover:underline"
+                    >À propos</a
+                >
+                <a
+                    href="/contact"
+                    class="font-body text-[30px] font-light hover:underline"
+                    >Contact</a
+                >
+                <a
+                    href="/mon-compte"
+                    class="font-body text-[30px] font-light hover:underline"
+                    >Mon compte</a
+                >
             </nav>
         </div>
     </div>
 </header>
 
 <script>
-    const menuToggle = document.getElementById('menuToggle');
-    const mobileMenu = document.getElementById('mobileMenu');
-    const menuClose = document.getElementById('menuClose');
+    const menuToggle = document.getElementById("menuToggle");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const menuClose = document.getElementById("menuClose");
 
     if (menuToggle && mobileMenu && menuClose) {
-        menuToggle.addEventListener('click', () => {
-            mobileMenu.classList.toggle('mobileMenuHidden');
+        menuToggle.addEventListener("click", () => {
+            mobileMenu.classList.toggle("mobileMenuHidden");
         });
 
-        menuClose.addEventListener('click', () => {
-            mobileMenu.classList.add('mobileMenuHidden');
+        menuClose.addEventListener("click", () => {
+            mobileMenu.classList.add("mobileMenuHidden");
         });
 
         // Fermer le menu quand on clique sur un lien
-        document.querySelectorAll('#mobileMenu a').forEach(link => {
-            link.addEventListener('click', () => {
-                mobileMenu.classList.add('mobileMenuHidden');
+        document.querySelectorAll("#mobileMenu a").forEach((link) => {
+            link.addEventListener("click", () => {
+                mobileMenu.classList.add("mobileMenuHidden");
             });
         });
     }
