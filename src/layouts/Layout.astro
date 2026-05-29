@@ -4,6 +4,7 @@ import "../styles/global.css";
 const {
 	title = "Odysignes",
 	description = "Apprendre la langue des signes en s'amusant.",
+	bodyClass = "bg-white text-black font-body",
 } = Astro.props;
 ---
 
@@ -17,7 +18,7 @@ const {
 		<meta name="description" content={description} />
 		<title>{title}</title>
 	</head>
-	<body class="bg-white text-black font-body">
+	<body class={bodyClass}>
 		<slot />
 	</body>
 </html>
