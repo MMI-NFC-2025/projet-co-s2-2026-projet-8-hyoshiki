@@ -1,0 +1,428 @@
+---
+export const prerender = false;
+
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { pb } from "../lib/pocketbase";
+
+let signes: any[] = [];
+try {
+	signes = await pb.collection("signes").getFullList(200);
+} catch (error) {
+	console.error("Erreur lors de la récupération des signes:", error);
+}
+
+function getImageUrl(record: any): string {
+	if (record.image) {
+		return `https://odysigne.carnicer.fr/api/files/${record.collectionName || "signes"}/${record.id}/${record.image}`;
+	}
+	return "";
+}
+---
+
+<Layout
+	title="Odysignes - Puzzle"
+	description="Remets les signes dans le bon ordre pour reconstruire la phrase"
+>
+	<div class="bg-white min-h-screen flex flex-col overflow-x-hidden">
+		<Header />
+
+		<main class="flex-1 mx-auto max-w-3xl w-full px-3 py-3 pt-12 md:pt-14">
+			<div class="mb-3 md:mb-4">
+				<a
+					href="/arcade"
+					class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-2 text-sm"
+				>
+					<svg
+						class="w-4 h-4"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M15 19l-7-7 7-7"></path>
+					</svg>
+					Retour
+				</a>
+				<h1 class="font-title text-xl md:text-2xl text-black">Puzzle des signes</h1>
+				<p class="text-gray-600 text-xs md:text-sm mt-1">
+					Remets les signes dans le bon ordre pour reformer la phrase.
+				</p>
+			</div>
+
+			<div class="grid gap-3 lg:grid-cols-[1.05fr_0.95fr]">
+				<section class="space-y-3 rounded-2xl bg-white p-3 md:p-4 shadow-soft border border-black/5">
+					<div class="rounded-xl bg-cyan-50 px-3 py-3 border border-cyan-100">
+						<p class="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-700">Phrase à reconstruire</p>
+						<p id="phraseText" class="mt-1 font-title text-lg md:text-xl leading-tight text-black">
+							Chargement de la phrase...
+						</p>
+					</div>
+
+					<div>
+						<div class="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.18em] text-black/45">
+							<span>Ordre 1</span>
+							<span>Ordre 4</span>
+						</div>
+						<div id="slotBoard" class="grid grid-cols-2 gap-2 md:grid-cols-4"></div>
+					</div>
+				</section>
+
+				<section class="space-y-3 rounded-2xl bg-white p-3 md:p-4 shadow-soft border border-black/5">
+					<div>
+						<p class="text-[10px] font-bold uppercase tracking-[0.22em] text-black/45">Signes disponibles</p>
+						<p class="mt-1 text-xs text-gray-600">Clique ou glisse les cartes dans le bon ordre.</p>
+					</div>
+
+					<div id="bankBoard" class="grid grid-cols-2 gap-2"></div>
+
+					<button
+						id="validateBtn"
+						class="w-full rounded-full bg-blue px-5 py-2.5 text-base font-title text-black transition-transform hover:scale-[1.01] hover:bg-cyan-300"
+					>
+						Valider
+					</button>
+
+					<div
+						id="feedback"
+						class="min-h-12 rounded-2xl flex items-center justify-center px-3 text-center text-sm font-semibold opacity-0 transition-opacity"
+					></div>
+				</section>
+			</div>
+		</main>
+
+		<Footer logoSrc={undefined} />
+	</div>
+</Layout>
+
+<script define:vars={{ signes }}>
+	const initPuzzle = () => {
+		const PUZZLE_SIZE = 4;
+		const phraseText = document.getElementById("phraseText");
+		const slotBoard = document.getElementById("slotBoard");
+		const bankBoard = document.getElementById("bankBoard");
+		const validateBtn = document.getElementById("validateBtn");
+		const feedback = document.getElementById("feedback");
+
+		if (!phraseText || !slotBoard || !bankBoard || !validateBtn || !feedback) return;
+
+		let correctOrder = [];
+		let bankOrder = [];
+		let selectedCardId = null;
+		let isLocked = false;
+		let placedBySlot = new Array(PUZZLE_SIZE).fill(null);
+		let cardSlotById = new Map();
+		let slotElements = [];
+		let bankCardById = new Map();
+		let solvedTimeout = null;
+
+		function getImageUrl(record) {
+			if (record.image) {
+				return `https://odysigne.carnicer.fr/api/files/signes/${record.id}/${record.image}`;
+			}
+			return "";
+		}
+
+		function shuffle(array) {
+			return [...array].sort(() => Math.random() - 0.5);
+		}
+
+		function formatSignText(signs) {
+			if (signs.length === 0) return "";
+			if (signs.length === 1) return signs[0].nom_signe || "";
+			if (signs.length === 2) {
+				return `${signs[0].nom_signe} et ${signs[1].nom_signe}`;
+			}
+			const parts = signs.map((sign) => sign.nom_signe || "");
+			return `${parts.slice(0, -1).join(", ")}, et ${parts.at(-1)}`;
+		}
+
+		function buildSentence(signs) {
+			const sentenceTemplates = [
+				(words) => `Je retiens ${words}.`,
+				(words) => `Aujourd'hui, je choisis ${words}.`,
+				(words) => `Pour apprendre, je répète ${words}.`,
+				(words) => `Dans le bon ordre, on lit ${words}.`,
+			];
+
+			const template = sentenceTemplates[Math.floor(Math.random() * sentenceTemplates.length)];
+			return template(formatSignText(signs));
+		}
+
+		function clearFeedback() {
+			feedback.textContent = "";
+			feedback.className = "min-h-14 rounded-2xl flex items-center justify-center px-4 text-center font-semibold opacity-0 transition-opacity";
+		}
+
+		function setFeedback(message, variant) {
+			const variantClasses =
+				variant === "success"
+					? "bg-green-100 text-green-700 opacity-100"
+					: variant === "error"
+						? "bg-red-100 text-red-700 opacity-100"
+						: "bg-cyan-50 text-cyan-700 opacity-100";
+			feedback.textContent = message;
+			feedback.className = `min-h-14 rounded-2xl flex items-center justify-center px-4 text-center font-semibold transition-opacity ${variantClasses}`;
+		}
+
+		function updateSelectionState() {
+			bankCardById.forEach((card) => {
+				const isSelected = card.dataset.cardId === selectedCardId;
+				card.classList.toggle("ring-4", isSelected);
+				card.classList.toggle("ring-blue", isSelected);
+				card.classList.toggle("scale-[1.02]", isSelected);
+			});
+		}
+
+		function renderBankCard(sign, mode = "bank") {
+			const card = document.createElement("button");
+			card.type = "button";
+			card.draggable = true;
+			card.dataset.cardId = sign.id;
+			card.dataset.cardName = sign.nom_signe || "";
+			card.dataset.cardMode = mode;
+			card.className =
+				mode === "bank"
+					? "puzzle-card flex min-h-[8rem] w-full flex-col items-center justify-between rounded-xl border-2 border-emerald-300 bg-white p-2 text-center shadow-soft transition-all hover:-translate-y-1 hover:shadow-md"
+					: "puzzle-card flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-emerald-300 bg-white p-2 text-center shadow-sm";
+
+			const imageUrl = getImageUrl(sign);
+			card.innerHTML = `
+				<div class="flex w-full flex-1 items-center justify-center rounded-lg bg-gray-50 p-1.5 overflow-hidden">
+					${
+						imageUrl
+							? `<img src="${imageUrl}" alt="${sign.nom_signe || "Signe"}" class="max-h-20 w-full object-contain" />`
+							: `<div class="flex h-16 w-full items-center justify-center rounded-lg bg-gray-200 text-[10px] text-gray-500">Image indisponible</div>`
+					}
+				</div>
+				<div class="w-full pt-2">
+					<p class="text-xs font-semibold leading-tight text-black">${sign.nom_signe || "Sans nom"}</p>
+				</div>
+			`;
+
+			card.addEventListener("click", () => {
+				if (isLocked) return;
+				selectedCardId = selectedCardId === sign.id ? null : sign.id;
+				updateSelectionState();
+			});
+
+			card.addEventListener("dragstart", (event) => {
+				if (isLocked) return;
+				selectedCardId = sign.id;
+				updateSelectionState();
+				event.dataTransfer?.setData("text/plain", sign.id);
+				event.dataTransfer?.setDragImage(card, 40, 40);
+			});
+
+			return card;
+		}
+
+		function renderSlotPlaceholder(index) {
+			return `
+				<div class="flex h-full min-h-[7rem] flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 text-gray-400 transition-colors">
+					<span class="text-[10px] font-bold uppercase tracking-[0.18em]">Place ${index + 1}</span>
+					<span class="mt-1 text-2xl font-bold">${index + 1}</span>
+				</div>
+			`;
+		}
+
+		function createSlot(index) {
+			const slot = document.createElement("button");
+			slot.type = "button";
+			slot.dataset.slotIndex = index.toString();
+			slot.className = "puzzle-slot group h-full min-h-[7rem] rounded-xl transition-all";
+			slot.innerHTML = renderSlotPlaceholder(index);
+
+			slot.addEventListener("click", () => {
+				if (isLocked) return;
+				const currentCardId = placedBySlot[index];
+
+				if (selectedCardId) {
+					placeCard(selectedCardId, index);
+					selectedCardId = null;
+					updateSelectionState();
+					return;
+				}
+
+				if (currentCardId) {
+					removeCardFromSlot(index);
+				}
+			});
+
+			slot.addEventListener("dragover", (event) => {
+				if (isLocked) return;
+				event.preventDefault();
+				slot.classList.add("scale-[1.01]");
+			});
+
+			slot.addEventListener("dragleave", () => {
+				slot.classList.remove("scale-[1.01]");
+			});
+
+			slot.addEventListener("drop", (event) => {
+				if (isLocked) return;
+				event.preventDefault();
+				slot.classList.remove("scale-[1.01]");
+				const draggedId = event.dataTransfer?.getData("text/plain");
+				if (draggedId) {
+					placeCard(draggedId, index);
+					selectedCardId = null;
+					updateSelectionState();
+				}
+			});
+
+			return slot;
+		}
+
+		function removeCardFromSlot(slotIndex) {
+			const cardId = placedBySlot[slotIndex];
+			if (!cardId) return;
+
+			placedBySlot[slotIndex] = null;
+			cardSlotById.delete(cardId);
+
+			const slot = slotElements[slotIndex];
+			if (slot) {
+				slot.innerHTML = renderSlotPlaceholder(slotIndex);
+				slot.className = "puzzle-slot group h-full min-h-[7rem] rounded-xl transition-all";
+			}
+
+			const bankCard = bankCardById.get(cardId);
+			if (bankCard) {
+				bankCard.classList.remove("hidden", "opacity-0", "pointer-events-none");
+				bankCard.classList.add("opacity-100");
+			}
+
+			validateBtn.disabled = false;
+			clearFeedback();
+		}
+
+		function placeCard(cardId, slotIndex) {
+			if (isLocked) return;
+
+			const sign = correctOrder.find((item) => item.id === cardId) || bankOrder.find((item) => item.id === cardId);
+			if (!sign) return;
+
+			const currentSlotIndex = cardSlotById.get(cardId);
+			if (currentSlotIndex === slotIndex) return;
+
+			if (currentSlotIndex !== undefined) {
+				removeCardFromSlot(currentSlotIndex);
+			}
+
+			const occupantId = placedBySlot[slotIndex];
+			if (occupantId && occupantId !== cardId) {
+				removeCardFromSlot(slotIndex);
+			}
+
+			placedBySlot[slotIndex] = cardId;
+			cardSlotById.set(cardId, slotIndex);
+
+			const slot = slotElements[slotIndex];
+			if (slot) {
+				slot.innerHTML = "";
+				slot.className = "puzzle-slot group h-full min-h-[7rem] rounded-xl transition-all";
+				slot.appendChild(renderBankCard(sign, "slot"));
+			}
+
+			const bankCard = bankCardById.get(cardId);
+			if (bankCard) {
+				bankCard.classList.add("hidden", "opacity-0", "pointer-events-none");
+				bankCard.classList.remove("opacity-100");
+			}
+
+			clearFeedback();
+		}
+
+		function evaluatePuzzle() {
+			if (placedBySlot.some((cardId) => !cardId)) {
+				setFeedback("Place les 4 signes avant de valider.", "neutral");
+				return;
+			}
+
+			const isCorrect = placedBySlot.every((cardId, index) => cardId === correctOrder[index].id);
+
+			slotElements.forEach((slot, index) => {
+				const cardId = placedBySlot[index];
+				const correct = cardId === correctOrder[index].id;
+				slot.classList.remove("border-red-400", "bg-red-50", "border-green-500", "bg-green-50");
+				slot.classList.add(correct ? "border-green-500" : "border-red-400", correct ? "bg-green-50" : "bg-red-50");
+			});
+
+			if (isCorrect) {
+				isLocked = true;
+				validateBtn.disabled = true;
+				setFeedback("Bravo, la phrase est dans le bon ordre !", "success");
+				if (solvedTimeout) {
+					window.clearTimeout(solvedTimeout);
+				}
+				solvedTimeout = window.setTimeout(() => {
+					buildPuzzle();
+				}, 1800);
+				return;
+			}
+
+			setFeedback("Ce n'est pas encore le bon ordre. Essaie encore.", "error");
+		}
+
+		function buildPuzzle() {
+			const validSigns = signes.filter((signe) => signe.nom_signe && getImageUrl(signe));
+			if (validSigns.length < PUZZLE_SIZE) {
+				phraseText.textContent = "Pas assez de signes disponibles pour créer un puzzle.";
+				slotBoard.innerHTML = "";
+				bankBoard.innerHTML = "";
+				validateBtn.disabled = true;
+				setFeedback("Ajoute au moins 4 signes avec une image dans PocketBase.", "error");
+				return;
+			}
+
+			if (solvedTimeout) {
+				window.clearTimeout(solvedTimeout);
+				solvedTimeout = null;
+			}
+
+			correctOrder = shuffle(validSigns).slice(0, PUZZLE_SIZE);
+			bankOrder = shuffle(correctOrder);
+			placedBySlot = new Array(PUZZLE_SIZE).fill(null);
+			cardSlotById = new Map();
+			selectedCardId = null;
+			isLocked = false;
+			validateBtn.disabled = false;
+
+			phraseText.textContent = buildSentence(correctOrder);
+			clearFeedback();
+
+			slotBoard.innerHTML = "";
+			slotElements = correctOrder.map((_, index) => {
+				const slot = createSlot(index);
+				slotBoard.appendChild(slot);
+				return slot;
+			});
+
+			bankBoard.innerHTML = "";
+			bankCardById = new Map();
+			bankOrder.forEach((sign, index) => {
+				const card = renderBankCard(sign, "bank");
+				card.dataset.cardIndex = index.toString();
+				bankCardById.set(sign.id, card);
+				bankBoard.appendChild(card);
+			});
+
+			updateSelectionState();
+		}
+
+		validateBtn.addEventListener("click", evaluatePuzzle);
+		buildPuzzle();
+	};
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", initPuzzle);
+	} else {
+		initPuzzle();
+	}
+</script>
+
