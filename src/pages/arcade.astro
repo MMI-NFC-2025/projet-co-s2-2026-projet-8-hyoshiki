@@ -7,7 +7,7 @@ import modeArcadeIcon from "../assets/img/logo_jeux.svg";
 
 <Layout
     title="Odysignes - Arcade et défis"
-    description="Jeux amusants et défis pour réviser la langue des signes"
+    description="Jeux et défis pour réviser la langue des signes"
 >
     <div class="bg-white min-h-screen flex flex-col">
         <Header />
@@ -58,6 +58,43 @@ import modeArcadeIcon from "../assets/img/logo_jeux.svg";
                         </h3>
                         <p class="text-sm leading-tight text-black/60">
                             Trouvez les paires de signes
+                        </p>
+                    </div>
+                    <svg
+                        class="h-5 w-5 shrink-0 text-blue"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                <a
+                    href="/quiz-vrai-faux"
+                    class="flex min-h-[159px] items-center gap-4 rounded-2xl border border-black/5 bg-white px-4 py-6 shadow-soft transition-shadow hover:shadow-md cursor-pointer hover:bg-blue/5"
+                >
+                    <div
+                        class="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-white"
+                    >
+                        <img
+                            src={modeArcadeIcon.src}
+                            alt=""
+                            class="h-16 w-16 object-contain"
+                        />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h3
+                            class="font-body text-xl font-normal leading-tight text-black"
+                        >
+                            Vrai ou Faux
+                        </h3>
+                        <p class="text-sm leading-tight text-black/60">
+                            Révise à l'instinct !
                         </p>
                     </div>
                     <svg
