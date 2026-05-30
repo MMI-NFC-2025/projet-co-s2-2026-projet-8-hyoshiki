@@ -1,0 +1,32 @@
+---
+import Button from "./Button.astro";
+
+const { logoSrc } = Astro.props;
+---
+
+<header class="border-b border-black/5 bg-white/90 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center px-6 py-6">
+        <a
+            href="/"
+            class="flex items-center gap-3"
+            aria-label="Retour à l'accueil"
+        >
+            <span class="font-title text-2xl text-blue">Odysignes</span>
+        </a>
+        <div class="ml-auto flex items-center gap-6">
+            <nav
+                class="hidden items-center gap-6 text-sm font-semibold text-black/80 md:flex"
+            >
+                <a href="/#fonctionnalites" class="hover:text-purple"
+                    >Fonctionnalités</a
+                >
+                <a href="/#apprentissage" class="hover:text-purple"
+                    >Apprentissage</a
+                >
+                <a href="/contact" class="hover:text-purple">Contact</a>
+                <a href="/login" class="hover:text-purple">Se connecter</a>
+                <a href="/register" class="hover:text-purple">S'inscrire</a>
+            </nav>
+        </div>
+    </div>
+</header>

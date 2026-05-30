@@ -1,0 +1,296 @@
+---
+export const prerender = false;
+
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { pb } from "../lib/pocketbase";
+
+// Récupérer tous les signes depuis PocketBase
+let signes: any[] = [];
+try {
+    signes = await pb.collection("signes").getFullList(200);
+} catch (error) {
+    console.error("Erreur lors de la récupération des signes:", error);
+}
+
+function getImageUrl(record: any): string {
+    if (record.image) {
+        return `https://odysigne.carnicer.fr/api/files/${record.collectionName || "signes"}/${record.id}/${record.image}`;
+    }
+    return "";
+}
+---
+
+<Layout
+    title="Odysignes - Quiz Vrai ou Faux"
+    description="Jeu Vrai ou Faux pour réviser la langue des signes"
+>
+    <div class="bg-white min-h-screen flex flex-col">
+        <Header />
+
+        <main class="flex-1 mx-auto max-w-2xl w-full px-3 py-4 pt-24">
+            <div class="mb-3">
+                <a
+                    href="/arcade"
+                    class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-2 text-sm"
+                >
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Retour
+                </a>
+                <h1 class="font-title text-2xl text-black">Vrai ou Faux</h1>
+                <p class="text-gray-600 text-sm mt-1">
+                    Quel signe correspond à cette image ?
+                </p>
+            </div>
+
+            <div class="flex flex-col items-center gap-3">
+                <!-- Signe à deviner -->
+                <div
+                    class="w-full max-w-xs bg-white rounded-2xl shadow-md p-4 flex items-center justify-center min-h-56"
+                >
+                    <img
+                        id="signImage"
+                        src=""
+                        alt="Signe"
+                        class="max-w-full max-h-full object-contain"
+                    />
+                </div>
+
+                <!-- Score -->
+                <div class="flex gap-3 text-center">
+                    <div
+                        class="bg-blue-100 rounded-lg px-3 py-1.5 border-2 border-blue"
+                    >
+                        <p class="text-xs text-blue font-semibold">
+                            Bonnes réponses
+                        </p>
+                        <p id="score" class="text-xl font-bold text-blue">0</p>
+                    </div>
+                    <div
+                        class="bg-red-100 rounded-lg px-3 py-1.5 border-2 border-red-500"
+                    >
+                        <p class="text-xs text-red-500 font-semibold">
+                            Erreurs
+                        </p>
+                        <p id="errors" class="text-xl font-bold text-red-500">
+                            0
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Options de réponse -->
+                <div class="w-full max-w-xs grid grid-cols-2 gap-3">
+                    <button
+                        id="option1"
+                        class="quiz-option h-24 rounded-xl bg-white border-2 border-gray-300 font-semibold text-sm text-blue hover:bg-blue/10 hover:border-blue transition-all cursor-pointer flex flex-col items-center justify-center p-2 text-center"
+                    >
+                        <span id="option1Text"></span>
+                    </button>
+                    <button
+                        id="option2"
+                        class="quiz-option h-24 rounded-xl bg-white border-2 border-gray-300 font-semibold text-sm text-blue hover:bg-blue/10 hover:border-blue transition-all cursor-pointer flex flex-col items-center justify-center p-2 text-center"
+                    >
+                        <span id="option2Text"></span>
+                    </button>
+                </div>
+
+                <!-- Feedback -->
+                <div
+                    id="feedback"
+                    class="w-full max-w-xs h-12 rounded-xl flex items-center justify-center font-semibold text-base opacity-0 transition-opacity"
+                >
+                </div>
+
+                <!-- Bouton suivant -->
+                <button
+                    id="nextButton"
+                    class="hidden px-8 py-3 bg-blue text-white rounded-lg font-semibold hover:bg-blue/90 transition-colors"
+                >
+                    Question suivante
+                </button>
+            </div>
+        </main>
+
+        <Footer logoSrc={undefined} />
+    </div>
+</Layout>
+
+<script define:vars={{ signes }}>
+    let currentSigne = null;
+    let wrongSigne = null;
+    let correctOption = null;
+    let answered = false;
+    let score = 0;
+    let errors = 0;
+    let playedSigns = new Set(); // Tracker les signes déjà joués
+
+    // Fonction pour obtenir l'URL de l'image
+    function getImageUrl(record) {
+        if (record.image) {
+            return `https://odysigne.carnicer.fr/api/files/signes/${record.id}/${record.image}`;
+        }
+        return "";
+    }
+
+    // Initialiser le jeu
+    function initGame() {
+        if (signes.length < 2) {
+            console.error("Pas assez de signes disponibles");
+            return;
+        }
+
+        // Vérifier s'il y a encore des signes non joués
+        if (playedSigns.size >= signes.length) {
+            // Tous les signes ont été joués
+            document.querySelector("main").innerHTML = `
+                <div class="flex flex-col items-center justify-center h-screen gap-8">
+                    <h2 class="font-title text-3xl text-black text-center">Bravo ! 🎉</h2>
+                    <p class="text-xl text-gray-600 text-center">Vous avez révisé tous les signes !</p>
+                    <div class="flex gap-8 bg-white p-8 rounded-2xl shadow-md">
+                        <div class="text-center">
+                            <p class="text-sm text-gray-600">Bonnes réponses</p>
+                            <p class="text-4xl font-bold text-green-600">${score}</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm text-gray-600">Erreurs</p>
+                            <p class="text-4xl font-bold text-red-600">${errors}</p>
+                        </div>
+                    </div>
+                    <a href="/arcade" class="px-8 py-3 bg-blue text-white rounded-lg font-semibold hover:bg-blue/90 transition-colors">
+                        Retour à l'arcade
+                    </a>
+                </div>
+            `;
+            return;
+        }
+
+        // Sélectionner un signe aléatoire non encore joué
+        let randomIndex;
+        do {
+            randomIndex = Math.floor(Math.random() * signes.length);
+        } while (playedSigns.has(signes[randomIndex].id));
+
+        currentSigne = signes[randomIndex];
+        playedSigns.add(currentSigne.id);
+
+        // Sélectionner une mauvaise réponse différente
+        let randomIndexWrong;
+        do {
+            randomIndexWrong = Math.floor(Math.random() * signes.length);
+        } while (signes[randomIndexWrong].id === currentSigne.id);
+        wrongSigne = signes[randomIndexWrong];
+
+        // Afficher l'image du signe
+        const imgUrl = getImageUrl(currentSigne);
+        if (imgUrl) {
+            document.getElementById("signImage").src = imgUrl;
+            document.getElementById("signImage").style.display = "block";
+        } else {
+            document.getElementById("signImage").style.display = "none";
+        }
+
+        // Créer les options
+        const options = [
+            { text: currentSigne.nom_signe, isCorrect: true },
+            { text: wrongSigne.nom_signe, isCorrect: false },
+        ];
+
+        // Mélanger les options
+        const randomOrder = Math.random() < 0.5;
+        if (randomOrder) {
+            options.reverse();
+        }
+
+        // Déterminer quelle option est correcte après mélange
+        correctOption = options.findIndex((opt) => opt.isCorrect);
+
+        // Afficher les options
+        document.getElementById("option1Text").textContent = options[0].text;
+        document.getElementById("option2Text").textContent = options[1].text;
+
+        // Réinitialiser le state
+        answered = false;
+        document.getElementById("feedback").textContent = "";
+        document.getElementById("feedback").className =
+            "w-full max-w-sm h-16 rounded-2xl flex items-center justify-center font-semibold text-lg opacity-0 transition-opacity";
+        document.querySelectorAll(".quiz-option").forEach((btn) => {
+            btn.disabled = false;
+            btn.classList.remove(
+                "bg-green-100",
+                "bg-red-100",
+                "border-green-500",
+                "border-red-500",
+            );
+        });
+    }
+
+    // Gérer la réponse
+    function handleAnswer(optionIndex) {
+        if (answered) return;
+
+        answered = true;
+        const isCorrect = optionIndex === correctOption;
+
+        if (isCorrect) {
+            score++;
+            document.getElementById("score").textContent = score;
+            document.getElementById("feedback").textContent = "✓ Correct !";
+            document.getElementById("feedback").className =
+                "w-full max-w-sm h-16 rounded-2xl flex items-center justify-center font-semibold text-lg opacity-100 transition-opacity bg-green-100 text-green-600";
+            document
+                .getElementById(`option${optionIndex + 1}`)
+                .classList.add("bg-green-100", "border-green-500");
+        } else {
+            errors++;
+            document.getElementById("errors").textContent = errors;
+            document.getElementById("feedback").textContent = "✗ Incorrect !";
+            document.getElementById("feedback").className =
+                "w-full max-w-sm h-16 rounded-2xl flex items-center justify-center font-semibold text-lg opacity-100 transition-opacity bg-red-100 text-red-600";
+            document
+                .getElementById(`option${optionIndex + 1}`)
+                .classList.add("bg-red-100", "border-red-500");
+            document
+                .getElementById(`option${correctOption + 1}`)
+                .classList.add("bg-green-100", "border-green-500");
+        }
+
+        // Désactiver tous les boutons
+        document.querySelectorAll(".quiz-option").forEach((btn) => {
+            btn.disabled = true;
+        });
+
+        // Passer à la prochaine question automatiquement après 2 secondes
+        setTimeout(() => {
+            initGame();
+        }, 2000);
+    }
+
+    // Event listeners pour les options
+    document
+        .getElementById("option1")
+        .addEventListener("click", () => handleAnswer(0));
+    document
+        .getElementById("option2")
+        .addEventListener("click", () => handleAnswer(1));
+
+    // Initialiser le jeu au chargement
+    initGame();
+</script>
+
+<style>
+    .quiz-option:disabled {
+        cursor: not-allowed;
+    }
+</style>

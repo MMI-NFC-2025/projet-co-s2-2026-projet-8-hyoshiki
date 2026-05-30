@@ -1,0 +1,193 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import modeArcadeIcon from "../assets/img/logo_jeux.svg";
+---
+
+<Layout
+    title="Odysignes - Arcade et défis"
+    description="Jeux et défis pour réviser la langue des signes"
+>
+    <div class="bg-white min-h-screen flex flex-col">
+        <Header />
+
+        <main class="flex-1 mx-auto max-w-4xl w-full px-4 py-8">
+            <div class="mb-6">
+                <a
+                    href="/accueil"
+                    class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-4"
+                >
+                    <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Retour
+                </a>
+                <h1 class="font-title text-3xl text-black">Arcade et défis</h1>
+                <p class="text-gray-600 mt-2">Donnez le meilleur !</p>
+            </div>
+
+            <div class="space-y-3">
+                <a
+                    href="/memory"
+                    class="flex min-h-[159px] items-center gap-4 rounded-2xl border border-black/5 bg-white px-4 py-6 shadow-soft transition-shadow hover:shadow-md cursor-pointer hover:bg-blue/5"
+                >
+                    <div
+                        class="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-white"
+                    >
+                        <img
+                            src={modeArcadeIcon.src}
+                            alt=""
+                            class="h-16 w-16 object-contain"
+                        />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h3
+                            class="font-body text-xl font-normal leading-tight text-black"
+                        >
+                            Mémory
+                        </h3>
+                        <p class="text-sm leading-tight text-black/60">
+                            Trouvez les paires de signes
+                        </p>
+                    </div>
+                    <svg
+                        class="h-5 w-5 shrink-0 text-blue"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                <a
+                    href="/quiz-vrai-faux"
+                    class="flex min-h-[159px] items-center gap-4 rounded-2xl border border-black/5 bg-white px-4 py-6 shadow-soft transition-shadow hover:shadow-md cursor-pointer hover:bg-blue/5"
+                >
+                    <div
+                        class="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-white"
+                    >
+                        <img
+                            src={modeArcadeIcon.src}
+                            alt=""
+                            class="h-16 w-16 object-contain"
+                        />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h3
+                            class="font-body text-xl font-normal leading-tight text-black"
+                        >
+                            Vrai ou Faux
+                        </h3>
+                        <p class="text-sm leading-tight text-black/60">
+                            Révise à l'instinct !
+                        </p>
+                    </div>
+                    <svg
+                        class="h-5 w-5 shrink-0 text-blue"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                <a
+                    href="/jeu_swipe"
+                    class="flex min-h-[159px] items-center gap-4 rounded-2xl border border-black/5 bg-white px-4 py-6 shadow-soft transition-shadow hover:shadow-md cursor-pointer hover:bg-blue/5"
+                >
+                    <div
+                        class="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-white"
+                    >
+                        <img
+                            src={modeArcadeIcon.src}
+                            alt=""
+                            class="h-16 w-16 object-contain"
+                        />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h3
+                            class="font-body text-xl font-normal leading-tight text-black"
+                        >
+                            Swipe Vrai ou Faux
+                        </h3>
+                        <p class="text-sm leading-tight text-black/60">
+                            Glisse à gauche ou à droite pour répondre
+                        </p>
+                    </div>
+                    <svg
+                        class="h-5 w-5 shrink-0 text-blue"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                <a
+                    href="/puzzle"
+                    class="flex min-h-[159px] items-center gap-4 rounded-2xl border border-black/5 bg-white px-4 py-6 shadow-soft transition-shadow hover:shadow-md cursor-pointer hover:bg-blue/5"
+                >
+                    <div
+                        class="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-white"
+                    >
+                        <img
+                            src={modeArcadeIcon.src}
+                            alt=""
+                            class="h-16 w-16 object-contain"
+                        />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h3
+                            class="font-body text-xl font-normal leading-tight text-black"
+                        >
+                            Puzzle des signes
+                        </h3>
+                        <p class="text-sm leading-tight text-black/60">
+                            Remets les signes dans le bon ordre
+                        </p>
+                    </div>
+                    <svg
+                        class="h-5 w-5 shrink-0 text-blue"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+        </main>
+
+        <Footer logoSrc={undefined} />
+    </div>
+</Layout>

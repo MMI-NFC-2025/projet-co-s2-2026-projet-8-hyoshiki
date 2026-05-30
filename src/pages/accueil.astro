@@ -1,0 +1,199 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import modeLessonsIcon from "../assets/img/logo_lecon.svg";
+import modeStoriesIcon from "../assets/img/logo_aventure.svg";
+import modeArcadeIcon from "../assets/img/logo_jeux.svg";
+import modeDictionaryIcon from "../assets/img/logo_dictionnaire.svg";
+
+const userName = "";
+const userLevel = 0;
+const weekDays = ["L", "M", "M", "J", "V", "S", "D"];
+const completedDays = [false, false, false, false, false, false, false];
+
+const lessons = [
+    {
+        id: 1,
+        title: "Chapitre 1",
+        name: "Boulangerie-Chocolat",
+        progress: 0,
+        bgColor: "bg-orange-100",
+        illustration: "🏪",
+    },
+    {
+        id: 2,
+        title: "Chapitre 2",
+        name: "Café & l'Horloge",
+        progress: 0,
+        bgColor: "bg-amber-100",
+        illustration: "☕",
+    },
+    {
+        id: 3,
+        title: "Chapitre 3",
+        name: "Chambre à coucher",
+        progress: 0,
+        bgColor: "bg-blue-100",
+        illustration: "🛏️",
+    },
+];
+
+const modes = [
+    {
+        icon: modeLessonsIcon,
+        title: "Leçons",
+        subtitle: "Apprenez par catégories",
+    },
+    {
+        icon: modeStoriesIcon,
+        title: "Aventures illustrées",
+        subtitle: "Une nouvelle histoire ?",
+    },
+    {
+        icon: modeArcadeIcon,
+        title: "Arcade et défis",
+        subtitle: "Donnez le meilleur !",
+    },
+    {
+        icon: modeDictionaryIcon,
+        title: "Dictionnaire LSF",
+        subtitle: "Révisez vos signes",
+    },
+];
+---
+
+<Layout
+    title="Odysignes - Accueil"
+    description="Bienvenue sur Odysignes - Apprenez la langue des signes en vous amusant"
+>
+    <div class="bg-white min-h-screen flex flex-col">
+        <Header />
+
+        <main class="flex-1 mx-auto max-w-6xl w-full px-4 py-8 sm:px-6">
+            <section class="mb-8">
+                <h1 class="font-title text-3xl text-black mb-6">
+                    Bonjour <span class="text-blue">{userName}</span>
+                </h1>
+
+                <div
+                    class="bg-gradient-to-r from-blue to-cyan-400 rounded-2xl p-6 text-white mb-6"
+                >
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-sm opacity-90">Jours</p>
+                        </div>
+                        <div class="flex gap-2">
+                            {
+                                weekDays.map((day, index) => (
+                                    <div class="flex flex-col items-center gap-1">
+                                        <div
+                                            class={`w-8 h-8 rounded-full ${
+                                                completedDays[index]
+                                                    ? "bg-white text-blue"
+                                                    : "bg-white/30"
+                                            } flex items-center justify-center text-xs font-semibold`}
+                                        >
+                                            {completedDays[index] && "✓"}
+                                        </div>
+                                        <p class="text-xs">{day}</p>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="font-title text-2xl text-black mb-4">
+                    Leçons en cours
+                </h2>
+                <div
+                    class="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0"
+                >
+                    {
+                        lessons.map((lesson) => (
+                            <div class="flex-shrink-0 w-40 rounded-2xl overflow-hidden bg-white shadow-soft border border-black/5 hover:shadow-md transition-shadow flex flex-col">
+                                <div
+                                    class={`h-28 ${lesson.bgColor} flex items-center justify-center text-5xl`}
+                                >
+                                    {lesson.illustration}
+                                </div>
+                                <div class="p-4 flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <h3 class="font-title text-sm text-black">
+                                            {lesson.title}
+                                        </h3>
+                                        <p class="text-xs text-black/70">
+                                            {lesson.name}
+                                        </p>
+                                    </div>
+                                    <div class="mt-3 bg-blue rounded-full py-2 px-3 text-white text-center">
+                                        <p class="text-sm font-semibold">
+                                            {lesson.progress}% effectué
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+            </section>
+
+            <section class="mb-8">
+                <h2 class="font-title text-2xl text-black mb-4">
+                    Modes d'apprentissage
+                </h2>
+                <div class="space-y-3">
+                    {
+                        modes.map((mode) => (
+                            <a
+                                href={
+                                    mode.title === "Arcade et défis"
+                                        ? "/arcade"
+                                        : mode.title === "Dictionnaire LSF"
+                                          ? "/dictionnaire"
+                                          : "#"
+                                }
+                                class="flex min-h-[159px] items-center gap-4 rounded-2xl border border-black/5 bg-white px-4 py-6 shadow-soft transition-shadow hover:shadow-md"
+                            >
+                                <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-white">
+                                    <img
+                                        src={mode.icon.src}
+                                        alt=""
+                                        class="h-16 w-16 object-contain"
+                                    />
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-body text-xl font-normal leading-tight text-black">
+                                        {mode.title}
+                                    </h3>
+                                    <p class="text-sm leading-tight text-black/60">
+                                        {mode.subtitle}
+                                    </p>
+                                </div>
+                                <svg
+                                    class="h-5 w-5 shrink-0 text-blue"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M9 5l7 7-7 7"
+                                    />
+                                </svg>
+                            </a>
+                        ))
+                    }
+                </div>
+            </section>
+        </main>
+
+        <Footer logoSrc={undefined} />
+    </div>
+</Layout>

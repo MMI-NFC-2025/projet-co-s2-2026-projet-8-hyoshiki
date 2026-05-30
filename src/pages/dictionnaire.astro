@@ -1,0 +1,243 @@
+---
+export const prerender = false;
+
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { pb } from "../lib/pocketbase";
+
+// Récupérer tous les signes depuis PocketBase
+let signes: any[] = [];
+try {
+    signes = await pb
+        .collection("signes")
+        .getFullList(200, { sort: "nom_signe" });
+} catch (error) {
+    console.error("Erreur lors de la récupération des signes:", error);
+}
+
+function getImageUrl(record: any): string {
+    if (record.image) {
+        return `https://odysigne.carnicer.fr/api/files/signes/${record.id}/${record.image}`;
+    }
+    return "";
+}
+---
+
+<Layout
+    title="Odysignes - Dictionnaire LSF"
+    description="Dictionnaire complet de la langue des signes"
+>
+    <div class="bg-white min-h-screen flex flex-col">
+        <Header />
+
+        <main class="flex-1 mx-auto max-w-6xl w-full px-4 py-8">
+            <div class="mb-8">
+                <a
+                    href="/accueil"
+                    class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-4"
+                >
+                    <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Retour
+                </a>
+                <h1 class="font-title text-4xl text-black">Dictionnaire LSF</h1>
+                <p class="text-gray-600 mt-2">
+                    Retrouvez tous nos signes de la langue des signes française
+                </p>
+            </div>
+
+            <!-- Barre de recherche -->
+            <div class="mb-8">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Rechercher un signe..."
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue transition-colors"
+                />
+            </div>
+
+            <!-- Grille de signes -->
+            <div
+                id="signesContainer"
+                class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+            >
+                {
+                    signes.map((signe) => (
+                        <div
+                            class="signe-card border-2 border-gray-200 rounded-xl p-4 hover:shadow-md hover:border-blue transition-all cursor-pointer flex flex-col items-center"
+                            data-signe-name={signe.nom_signe?.toLowerCase()}
+                        >
+                            {signe.image && getImageUrl(signe) ? (
+                                <div class="w-full h-32 flex items-center justify-center bg-gray-50 rounded-lg mb-3">
+                                    <img
+                                        src={getImageUrl(signe)}
+                                        alt={signe.nom_signe}
+                                        class="max-w-full max-h-full object-contain"
+                                    />
+                                </div>
+                            ) : (
+                                <div class="w-full h-32 flex items-center justify-center bg-gray-100 rounded-lg mb-3 text-gray-400">
+                                    <span>Pas d'image</span>
+                                </div>
+                            )}
+                            <h3 class="font-semibold text-center text-sm text-black">
+                                {signe.nom_signe}
+                            </h3>
+                        </div>
+                    ))
+                }
+            </div>
+
+            <!-- Message si aucun résultat -->
+            <div id="noResults" class="hidden text-center py-12">
+                <p class="text-gray-600 text-lg">Aucun signe trouvé</p>
+            </div>
+
+            <!-- Modal pour affichage détail du signe -->
+            <div
+                id="signeModal"
+                class="hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4"
+                style="display: none;"
+            >
+                <div class="bg-white rounded-2xl max-w-md w-full p-6 relative">
+                    <button
+                        id="closeModal"
+                        class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                        <svg
+                            class="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+
+                    <div class="flex flex-col items-center gap-4">
+                        <img
+                            id="modalImage"
+                            src=""
+                            alt="Signe détail"
+                            class="w-full h-64 object-contain"
+                        />
+                        <h2
+                            id="modalTitle"
+                            class="font-title text-2xl text-black text-center"
+                        >
+                        </h2>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <Footer logoSrc={undefined} />
+    </div>
+</Layout>
+
+<script lang="ts" define:vars={{ signes }}>
+    const searchInput = document.getElementById("searchInput");
+    const signesContainer = document.getElementById("signesContainer");
+    const noResults = document.getElementById("noResults");
+    const signeCards = document.querySelectorAll(".signe-card");
+    const signeModal = document.getElementById("signeModal");
+    const closeModal = document.getElementById("closeModal");
+    const modalImage = document.getElementById("modalImage");
+    const modalTitle = document.getElementById("modalTitle");
+
+    function filterSignes() {
+        const searchTerm = (searchInput.value || "").toLowerCase();
+        let visibleCount = 0;
+
+        signeCards.forEach((card) => {
+            const signe_name = card.getAttribute("data-signe-name") || "";
+            if (signe_name.includes(searchTerm)) {
+                card.style.display = "flex";
+                visibleCount++;
+            } else {
+                card.style.display = "none";
+            }
+        });
+
+        // Afficher/masquer le message "aucun résultat"
+        if (visibleCount === 0 && searchTerm !== "") {
+            noResults?.classList.remove("hidden");
+            signesContainer?.classList.add("hidden");
+        } else {
+            noResults?.classList.add("hidden");
+            signesContainer?.classList.remove("hidden");
+        }
+    }
+
+    function openSigneModal(signe) {
+        const imageUrl = signe.image
+            ? `https://odysigne.carnicer.fr/api/files/signes/${signe.id}/${signe.image}`
+            : "";
+
+        if (modalImage) modalImage.setAttribute("src", imageUrl);
+        if (modalTitle) modalTitle.textContent = signe.nom_signe;
+        signeModal?.classList.remove("hidden");
+        signeModal?.style.setProperty("display", "flex");
+    }
+
+    function closeSigneModal() {
+        signeModal?.classList.add("hidden");
+        signeModal?.style.setProperty("display", "none");
+    }
+
+    // Écouter les changements de la barre de recherche
+    searchInput?.addEventListener("input", filterSignes);
+
+    // Fermer la modal
+    closeModal?.addEventListener("click", closeSigneModal);
+    signeModal?.addEventListener("click", (e) => {
+        if (e.target === signeModal) {
+            closeSigneModal();
+        }
+    });
+
+    // Ajouter un événement de clic sur les cartes
+    signeCards.forEach((card) => {
+        card.addEventListener("click", function () {
+            // Trouver le signe correspondant
+            const signe_name = this.getAttribute("data-signe-name");
+            const signe = signes.find(
+                (s) => s.nom_signe?.toLowerCase() === signe_name,
+            );
+            if (signe) {
+                openSigneModal(signe);
+            }
+        });
+    });
+
+    // Fermer la modal avec la touche Échap
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            closeSigneModal();
+        }
+    });
+</script>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>

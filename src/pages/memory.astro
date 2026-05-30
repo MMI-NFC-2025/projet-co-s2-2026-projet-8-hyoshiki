@@ -1,0 +1,357 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { pb } from "../lib/pocketbase";
+
+// Récupérer les signes depuis PocketBase
+let signes: any[] = [];
+try {
+  signes = await pb.collection("signes").getFullList(50);
+} catch (error) {
+  console.error("Erreur lors de la récupération des signes:", error);
+}
+
+// Mots-clés pour identifier les signes d'émotions (basés sur les signes existants)
+const emotionKeywords = [
+  "peur",
+  "joyeux",
+  "espoir",
+  "colère",
+  "bonjour",
+  "au revoir",
+  "dormir",
+  "à bientôt",
+];
+
+// Filtrer pour garder uniquement les signes d'émotions
+const emotionSigns = signes.filter((signe) => {
+  const nomLower = signe.nom_signe?.toLowerCase() || "";
+  return emotionKeywords.some((keyword) => nomLower.includes(keyword));
+});
+
+// Prendre les 8 premiers signes d'émotions et créer les paires image-texte
+const selectedSignes = emotionSigns.slice(0, 8);
+const pairs: any[] = [];
+
+// Pour chaque signe, créer une carte image et une carte texte
+selectedSignes.forEach((signe) => {
+  pairs.push({
+    ...signe,
+    type: "image",
+  });
+  pairs.push({
+    ...signe,
+    type: "text",
+  });
+});
+
+// Mélanger les paires
+pairs.sort(() => Math.random() - 0.5);
+
+// Fonction pour obtenir l'URL de l'image
+function getImageUrl(record: any): string {
+  if (record.image) {
+    return `https://odysigne.carnicer.fr/api/files/${record.collectionName || "signes"}/${record.id}/${record.image}`;
+  }
+  return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50" y="50" text-anchor="middle" dy=".3em">?</text></svg>';
+}
+---
+
+<Layout
+  title="Odysignes - Jeu Mémory"
+  description="Jeu Mémory - Trouvez les paires de signes"
+>
+  <div class="bg-white min-h-screen flex flex-col">
+    <Header />
+    <main class="flex-1 mx-auto max-w-4xl w-full px-4 py-8">
+      <div class="mb-6">
+        <a
+          href="/accueil"
+          class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-4"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Retour
+        </a>
+        <h1 class="font-title text-3xl text-black">Mémory</h1>
+        <p class="text-gray-600 mt-2">Trouvez les paires de signes</p>
+      </div>
+
+      <div class="mb-6 text-center">
+        <div class="flex justify-center gap-8 items-center">
+          <div>
+            <p class="text-sm text-gray-600">Paires trouvées</p>
+            <p class="text-3xl font-semibold"><span id="found">0</span>/8</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Temps restant</p>
+            <p class="text-3xl font-semibold"><span id="timer">120</span>s</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="game-board" class="grid grid-cols-4 gap-4 mb-8">
+        {
+          pairs.map((signe, index) => (
+            <div
+              class="memory-card bg-cyan-300 rounded-lg h-40 cursor-pointer flex items-center justify-center overflow-hidden transition-all hover:shadow-lg"
+              data-index={index}
+              data-sign-id={signe.id}
+              data-sign-name={signe.nom_signe}
+              data-type={signe.type}
+              data-image={getImageUrl(signe)}
+            >
+              <div class="sign-back w-full h-full flex items-center justify-center bg-cyan-400 text-5xl font-bold">
+                ?
+              </div>
+              {signe.type === "image" ? (
+                <div class="sign-image hidden w-full h-full flex items-center justify-center bg-white p-2">
+                  <img
+                    class="max-w-full max-h-full object-contain"
+                    alt={signe.nom_signe}
+                  />
+                </div>
+              ) : (
+                <div class="sign-text hidden w-full h-full flex items-center justify-center bg-white p-2">
+                  <span class="text-2xl font-semibold text-center">
+                    {signe.nom_signe}
+                  </span>
+                </div>
+              )}
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="text-center">
+        <button
+          id="reset-btn"
+          class="bg-blue text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue/90 transition-colors"
+        >
+          Recommencer
+        </button>
+      </div>
+    </main>
+    <Footer logoSrc={undefined} />
+  </div>
+</Layout>
+
+<script>
+  let flipped: string[] = [];
+  let matched: string[] = [];
+  let timeLeft = 120;
+  let timerInterval: number | null = null;
+  let gameOver = false;
+  let isChecking = false; // Variable pour bloquer les clics pendant la vérification
+
+  const cardsContainer = document.getElementById("game-board");
+  const foundCount = document.getElementById("found");
+  const timerDisplay = document.getElementById("timer");
+  const resetBtn = document.getElementById("reset-btn");
+
+  // Fonction pour mélanger les cartes aléatoirement
+  function shuffleCards() {
+    const cards = Array.from(document.querySelectorAll(".memory-card"));
+
+    // Fisher-Yates shuffle
+    for (let i = cards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = cards[i];
+      cards[i] = cards[j];
+      cards[j] = temp;
+    }
+
+    // Réinsérer les cartes mélangées dans le DOM
+    cards.forEach((card, index) => {
+      card.setAttribute("data-index", index.toString());
+      cardsContainer?.appendChild(card);
+    });
+  }
+
+  // Assigner les images aux cartes
+  function setupCards() {
+    const cards = document.querySelectorAll(".memory-card");
+    cards.forEach((card) => {
+      const cardType = card.getAttribute("data-type");
+      const imageUrl = card.getAttribute("data-image");
+
+      if (cardType === "image") {
+        const imgContainer = card.querySelector(".sign-image");
+        const imgElement = imgContainer?.querySelector(
+          "img",
+        ) as HTMLImageElement;
+        if (imgElement) {
+          imgElement.src = imageUrl || "";
+        }
+      }
+      // Les cartes texte n'ont pas besoin de setup - le texte est déjà dans le HTML
+    });
+  }
+
+  // Démarrer le timer
+  function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = window.setInterval(() => {
+      timeLeft--;
+      timerDisplay!.textContent = timeLeft.toString();
+
+      if (timeLeft <= 0) {
+        endGame(false);
+      }
+    }, 1000);
+  }
+
+  function flipCard(card: Element) {
+    if (gameOver || isChecking) return; // Bloquer les clics pendant la vérification
+
+    const index = card.getAttribute("data-index");
+    if (matched.includes(index!) || flipped.includes(index!)) {
+      return;
+    }
+
+    card.classList.add("flipped");
+    const signBack = card.querySelector(".sign-back") as HTMLElement;
+    const cardType = card.getAttribute("data-type");
+
+    if (signBack) signBack.classList.add("hidden");
+
+    if (cardType === "image") {
+      const signImage = card.querySelector(".sign-image") as HTMLElement;
+      if (signImage) signImage.classList.remove("hidden");
+    } else {
+      const signText = card.querySelector(".sign-text") as HTMLElement;
+      if (signText) signText.classList.remove("hidden");
+    }
+
+    flipped.push(index!);
+
+    if (flipped.length === 2) {
+      isChecking = true; // Bloquer les clics
+      checkMatch();
+    }
+  }
+
+  function checkMatch() {
+    const card1Index = flipped[0];
+    const card2Index = flipped[1];
+    const card1 = document.querySelector(`[data-index="${card1Index}"]`);
+    const card2 = document.querySelector(`[data-index="${card2Index}"]`);
+
+    const id1 = card1?.getAttribute("data-sign-id");
+    const id2 = card2?.getAttribute("data-sign-id");
+    const match = id1 === id2;
+
+    if (match) {
+      matched.push(card1Index, card2Index);
+      if (card1) card1.classList.add("matched");
+      if (card2) card2.classList.add("matched");
+      foundCount!.textContent = (matched.length / 2).toString();
+
+      isChecking = false; // Débloquer les clics
+
+      if (matched.length === document.querySelectorAll(".memory-card").length) {
+        endGame(true);
+      }
+    } else {
+      setTimeout(() => {
+        const signBack1 = card1?.querySelector(".sign-back") as HTMLElement;
+        const signImage1 = card1?.querySelector(".sign-image") as HTMLElement;
+        const signText1 = card1?.querySelector(".sign-text") as HTMLElement;
+        const signBack2 = card2?.querySelector(".sign-back") as HTMLElement;
+        const signImage2 = card2?.querySelector(".sign-image") as HTMLElement;
+        const signText2 = card2?.querySelector(".sign-text") as HTMLElement;
+
+        if (card1) card1.classList.remove("flipped");
+        if (card2) card2.classList.remove("flipped");
+        if (signBack1) signBack1.classList.remove("hidden");
+        if (signImage1) signImage1.classList.add("hidden");
+        if (signText1) signText1.classList.add("hidden");
+        if (signBack2) signBack2.classList.remove("hidden");
+        if (signImage2) signImage2.classList.add("hidden");
+        if (signText2) signText2.classList.add("hidden");
+
+        isChecking = false; // Débloquer les clics après le délai
+      }, 1000);
+    }
+
+    flipped = [];
+  }
+
+  function endGame(won: boolean) {
+    gameOver = true;
+    if (timerInterval) clearInterval(timerInterval);
+
+    if (won) {
+      alert("🎉 Bravo! Tu as trouvé toutes les paires!");
+    } else {
+      alert("⏰ Temps écoulé! Recommence le jeu.");
+      resetGame();
+    }
+  }
+
+  function resetGame() {
+    flipped = [];
+    matched = [];
+    timeLeft = 120;
+    gameOver = false;
+    isChecking = false;
+    foundCount!.textContent = "0";
+    timerDisplay!.textContent = "120";
+
+    const cards = document.querySelectorAll(".memory-card");
+    cards.forEach((card) => {
+      card.classList.remove("flipped", "matched");
+      const signBack = card.querySelector(".sign-back") as HTMLElement;
+      const signImage = card.querySelector(".sign-image") as HTMLElement;
+      if (signBack) signBack.classList.remove("hidden");
+      if (signImage) signImage.classList.add("hidden");
+    });
+
+    shuffleCards();
+    startTimer();
+  }
+
+  // Initialisation
+  setupCards();
+  shuffleCards();
+
+  const cards = document.querySelectorAll(".memory-card");
+  cards.forEach((card) => {
+    card.addEventListener("click", () => flipCard(card));
+  });
+
+  resetBtn?.addEventListener("click", resetGame);
+
+  // Démarrer le timer au chargement
+  startTimer();
+</script>
+
+<style>
+  .memory-card.flipped .sign-back {
+    display: none !important;
+  }
+
+  .memory-card.flipped .sign-image {
+    display: flex !important;
+  }
+
+  .memory-card.matched {
+    opacity: 1;
+    cursor: not-allowed;
+  }
+
+  .sign-image {
+    background-color: white;
+  }
+</style>
