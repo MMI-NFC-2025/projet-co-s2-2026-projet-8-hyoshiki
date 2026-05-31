@@ -64,7 +64,7 @@ function getImageUrl(record: any): string {
 >
   <div class="bg-white min-h-screen flex flex-col">
     <Header />
-    <main class="flex-1 mx-auto max-w-4xl w-full px-4 py-8">
+    <main class="flex-1 mx-auto mt-6 max-w-4xl w-full px-4 py-8">
       <div class="mb-6">
         <a
           href="/accueil"
@@ -116,18 +116,14 @@ function getImageUrl(record: any): string {
                 ?
               </div>
               {signe.type === "image" ? (
-                <div class="sign-image hidden w-full h-full flex items-center justify-center bg-white p-2">
+                <div class="sign-image hidden w-full h-full bg-white p-2" style="display:flex; align-items:center; justify-content:center;">
                   <img
                     class="max-w-full max-h-full object-contain"
                     alt={signe.nom_signe}
                   />
                 </div>
               ) : (
-                <div class="sign-text hidden w-full h-full flex items-center justify-center bg-white p-2">
-                  <span class="text-2xl font-semibold text-center">
-                    {signe.nom_signe}
-                  </span>
-                </div>
+                <div class="sign-text hidden w-full h-full bg-white p-2" style="display:flex; align-items:center; justify-content:center;"></div>
               )}
             </div>
           ))
@@ -143,7 +139,9 @@ function getImageUrl(record: any): string {
         </button>
       </div>
     </main>
-    <Footer logoSrc={undefined} />
+    <div class="mt-8">
+      <Footer logoSrc={undefined} />
+    </div>
   </div>
 </Layout>
 
@@ -267,19 +265,15 @@ function getImageUrl(record: any): string {
       setTimeout(() => {
         const signBack1 = card1?.querySelector(".sign-back") as HTMLElement;
         const signImage1 = card1?.querySelector(".sign-image") as HTMLElement;
-        const signText1 = card1?.querySelector(".sign-text") as HTMLElement;
         const signBack2 = card2?.querySelector(".sign-back") as HTMLElement;
         const signImage2 = card2?.querySelector(".sign-image") as HTMLElement;
-        const signText2 = card2?.querySelector(".sign-text") as HTMLElement;
 
         if (card1) card1.classList.remove("flipped");
         if (card2) card2.classList.remove("flipped");
         if (signBack1) signBack1.classList.remove("hidden");
         if (signImage1) signImage1.classList.add("hidden");
-        if (signText1) signText1.classList.add("hidden");
         if (signBack2) signBack2.classList.remove("hidden");
         if (signImage2) signImage2.classList.add("hidden");
-        if (signText2) signText2.classList.add("hidden");
 
         isChecking = false; // Débloquer les clics après le délai
       }, 1000);
