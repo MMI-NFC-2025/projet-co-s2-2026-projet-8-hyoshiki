@@ -1,0 +1,268 @@
+---
+export const prerender = false;
+
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { pb } from "../lib/pocketbase";
+
+const baseApiUrl = "https://odysigne.carnicer.fr";
+
+const normalizeSlug = (value: string) =>
+    value
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "categorie";
+
+const getImageUrl = (record: any): string => {
+    const image = Array.isArray(record?.image) ? record.image[0] : record?.image;
+
+    if (!image) {
+        return "";
+    }
+
+    return `${baseApiUrl}/api/files/${record.collectionName || "signes"}/${record.id}/${image}`;
+};
+
+type LeconRecord = {
+    id: string;
+    titre?: string;
+    description?: string;
+    difficulte?: string;
+    xp?: number;
+    XP?: number;
+};
+
+type SigneRecord = {
+    id: string;
+    nom_signe?: string;
+    image?: string | string[];
+    collectionName?: string;
+    lecons_associees?: string[];
+};
+
+const pickFeaturedSign = (relatedSigns: any[], lessonTitle: string) => {
+    const titleKey = lessonTitle.toLowerCase();
+    const preferredNames = titleKey.includes("salle de bain") || titleKey.includes("sdb")
+        ? ["salle de bain", "sdb"]
+        : [titleKey];
+
+    const byPreferredName = relatedSigns.find((sign) => {
+        const signName = (sign.nom_signe || "").toLowerCase();
+        return preferredNames.some((preferred) => signName.includes(preferred));
+    });
+
+    if (byPreferredName) {
+        return byPreferredName;
+    }
+
+    const byImage = relatedSigns.find((sign) => getImageUrl(sign));
+    if (byImage) {
+        return byImage;
+    }
+
+    return relatedSigns[0] ?? null;
+};
+
+const formatCount = (count: number) => `${count} ${count > 1 ? "mots" : "mot"}`;
+
+const authCookie = Astro.request.headers.get("cookie") ?? "";
+pb.authStore.loadFromCookie(authCookie);
+
+const currentUser = pb.authStore.model;
+
+let lecons: LeconRecord[] = [];
+let signes: SigneRecord[] = [];
+let suivisLecons: Array<{ lecon?: string }> = [];
+
+try {
+    [lecons, signes] = await Promise.all([
+        pb.collection("lecons").getFullList(200, { sort: "titre" }),
+        pb.collection("signes").getFullList(200, { sort: "nom_signe" }),
+    ]);
+} catch (error) {
+    console.error("Erreur lors du chargement des leçons:", error);
+}
+
+if (currentUser) {
+    try {
+        suivisLecons = await pb.collection("suivi_lecons").getFullList(200, {
+            filter: `user="${currentUser.id}" && statut_fini=true`,
+        });
+    } catch (error) {
+        console.error("Erreur lors du chargement du suivi:", error);
+    }
+}
+
+const completedLessonIds = new Set(
+    suivisLecons
+        .map((item) => item.lecon)
+        .filter(Boolean)
+        .map((value) => String(value)),
+);
+
+const lessonCards = lecons.map((lecon: LeconRecord, index: number) => {
+    const relatedSigns = signes.filter((signe) => {
+        const linkedLessons = Array.isArray(signe.lecons_associees)
+            ? signe.lecons_associees
+            : [];
+
+        return linkedLessons.some((lessonId) => String(lessonId) === String(lecon.id));
+    });
+
+    const title = lecon.titre || `Leçon ${index + 1}`;
+    const featuredSign = pickFeaturedSign(relatedSigns, title);
+
+    return {
+        ...lecon,
+        title,
+        slug: normalizeSlug(title),
+        relatedSigns,
+        featuredSign,
+        xp: Number(lecon.XP ?? lecon.xp ?? 0),
+    };
+});
+
+const completedLessons = lessonCards.filter((lesson) =>
+    completedLessonIds.has(String(lesson.id)),
+).length;
+
+const totalLessons = lessonCards.length;
+const progressPercent = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+const totalSigns = signes.length;
+---
+
+<Layout
+    title="Odysignes - Leçons"
+    description="Retrouvez les catégories de signes et révisez-les par leçon."
+    bodyClass="bg-[#f4fbfd] text-black font-body"
+>
+    <div class="min-h-screen bg-[#f4fbfd] text-black">
+        <Header />
+
+        <main class="mx-auto mt-4 flex w-full max-w-[430px] flex-1 flex-col gap-6 px-4 py-8 pb-10 sm:mt-6 sm:max-w-3xl sm:px-6 lg:max-w-5xl lg:py-10">
+            <section class="rounded-[2rem] bg-white px-5 py-6 shadow-[0_10px_30px_rgba(0,0,0,0.10)] sm:px-8 sm:py-8">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p class="font-body text-xs uppercase tracking-[0.3em] text-[#24cfe8]">
+                            Apprentissage
+                        </p>
+                        <h1 class="mt-1 font-title text-3xl leading-none text-black sm:text-4xl">
+                            Votre progression
+                        </h1>
+                    </div>
+
+                    <div class="rounded-2xl bg-[#f6fdff] px-4 py-3 text-xs text-black/70 ring-1 ring-black/5 sm:text-sm">
+                        <p>
+                            {currentUser ? "Suivi connecté" : "Suivi public"}
+                        </p>
+                        <p class="mt-1 font-semibold text-black">
+                            {totalSigns} signes liés
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-6 rounded-[1.75rem] bg-[#24cfe8] px-5 py-5 text-white shadow-[0_12px_24px_rgba(36,207,232,0.18)] sm:px-6 sm:py-6">
+                    <p class="text-xs font-medium uppercase tracking-[0.22em] text-white/90 sm:text-sm">
+                        Votre progression
+                    </p>
+                    <p class="mt-1 font-title text-3xl leading-none sm:text-4xl">
+                        {completedLessons}/{totalLessons || 0}
+                    </p>
+                    <p class="mt-1 text-base leading-tight text-white/95 sm:text-lg">
+                        leçons complétées
+                    </p>
+
+                    <div class="mt-4 h-3 overflow-hidden rounded-full bg-white/35">
+                        <div
+                            class="h-full rounded-full bg-white transition-[width]"
+                            style={`width: ${progressPercent}%`}
+                        ></div>
+                    </div>
+
+                    <p class="mt-3 text-xs text-white/90 sm:text-sm">
+                        {currentUser
+                            ? "La progression vient du suivi PocketBase connecté à votre compte."
+                            : "Connectez-vous pour synchroniser vos leçons terminées."}
+                    </p>
+                </div>
+            </section>
+
+            <section class="space-y-5">
+                {lessonCards.length > 0 ? (
+                    lessonCards.map((lesson) => (
+                        <a href={`/lecons/${lesson.id}`} class="block">
+                            <article
+                                id={lesson.slug}
+                                class="overflow-hidden rounded-[2rem] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.10)] transition-transform hover:-translate-y-0.5"
+                            >
+                                <div class="relative overflow-hidden bg-[#24cfe8] px-5 pb-6 pt-6 text-white sm:px-6">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="min-w-0">
+                                            <p class="text-xs uppercase tracking-[0.28em] text-white/80">
+                                                Catégorie
+                                            </p>
+                                            <h2 class="font-title text-3xl leading-none sm:text-4xl">
+                                                {lesson.title}
+                                            </h2>
+                                            <p class="mt-2 max-w-[16rem] text-sm leading-snug text-white/95 sm:text-base">
+                                                {lesson.description ||
+                                                    "Révisez les signes rattachés à cette catégorie."}
+                                            </p>
+                                        </div>
+
+                                        <div class="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden sm:h-32 sm:w-32">
+                                            {lesson.featuredSign && getImageUrl(lesson.featuredSign) ? (
+                                                <img
+                                                    src={getImageUrl(lesson.featuredSign)}
+                                                    alt={lesson.featuredSign.nom_signe || lesson.title}
+                                                    class="h-full w-full object-contain p-0"
+                                                />
+                                            ) : (
+                                                <span class="font-title text-xl text-white/90">
+                                                    ?
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+                                    <p class="text-sm font-semibold text-black sm:text-base">
+                                        {formatCount(lesson.relatedSigns.length)} à apprendre
+                                    </p>
+                                    <p class="text-sm font-semibold text-[#f6b81d] sm:text-base">
+                                        ★ {lesson.xp} XP
+                                    </p>
+                                </div>
+
+                                <div class="px-5 pb-5 sm:px-6">
+                                    <span
+                                        class="flex w-full items-center justify-center rounded-full bg-[#35e85c] px-3 py-2.5 text-base font-semibold text-white shadow-[0_8px_18px_rgba(53,232,92,0.25)]"
+                                    >
+                                        ✓ Réviser
+                                    </span>
+                                </div>
+                            </article>
+                        </a>
+                    ))
+                ) : (
+                    <section class="rounded-[1.5rem] bg-white px-5 py-6 text-center shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
+                        <h2 class="font-title text-xl text-black sm:text-2xl">
+                            Aucune leçon disponible
+                        </h2>
+                        <p class="mt-2 text-xs text-black/60">
+                            La collection PocketBase `lecons` est vide ou indisponible pour le moment.
+                        </p>
+                    </section>
+                )}
+            </section>
+        </main>
+
+        <div class="mt-8 sm:mt-10">
+            <Footer logoSrc={undefined} />
+        </div>
+    </div>
+</Layout>

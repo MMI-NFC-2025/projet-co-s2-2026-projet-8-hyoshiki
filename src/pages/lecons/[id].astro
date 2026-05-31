@@ -1,0 +1,544 @@
+---
+export const prerender = false;
+
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { pb } from "../../lib/pocketbase";
+import showerLeconIcon from "../../assets/img/Shower_lecon.svg";
+
+const baseApiUrl = "https://odysigne.carnicer.fr";
+
+const getImageUrl = (record: any): string => {
+    const image = Array.isArray(record?.image) ? record.image[0] : record?.image;
+
+    if (!image) {
+        return "";
+    }
+
+    return `${baseApiUrl}/api/files/${record.collectionName || "signes"}/${record.id}/${image}`;
+};
+
+type LeconRecord = {
+    id: string;
+    titre?: string;
+    description?: string;
+    xp?: number;
+    XP?: number;
+};
+
+type SigneRecord = {
+    id: string;
+    nom_signe?: string;
+    image?: string | string[];
+    collectionName?: string;
+    lecons_associees?: string[];
+};
+
+const id = Astro.params.id || "";
+
+let lecons: LeconRecord[] = [];
+let signes: SigneRecord[] = [];
+
+try {
+    [lecons, signes] = await Promise.all([
+        pb.collection("lecons").getFullList(200, { sort: "titre" }),
+        pb.collection("signes").getFullList(200, { sort: "nom_signe" }),
+    ]);
+} catch (error) {
+    console.error("Erreur lors du chargement de la leçon:", error);
+}
+
+const lesson = lecons.find((item) => String(item.id) === String(id)) || null;
+
+if (!lesson) {
+    return Astro.redirect("/lecons");
+}
+
+const lessonSigns = signes.filter((signe) => {
+    const linkedLessons = Array.isArray(signe.lecons_associees) ? signe.lecons_associees : [];
+    return linkedLessons.some((lessonId) => String(lessonId) === String(lesson.id));
+});
+
+const lessonXp = Number(lesson.XP ?? lesson.xp ?? 0);
+
+const signsData = lessonSigns.map((sign) => ({
+    id: sign.id,
+    nom: sign.nom_signe || "Signe",
+    image: getImageUrl(sign),
+}));
+
+const total = signsData.length;
+const quizQuestionCount = total;
+const initialSign = signsData[0] || null;
+---
+<Layout
+    title={`Odysignes - ${lesson.titre || "Leçon"}`}
+>
+    <div class="min-h-screen bg-[#f4fbfd] text-black">
+        <Header />
+
+        <main class="mx-auto flex w-full max-w-[430px] flex-1 flex-col gap-4 px-4 py-6 pb-8 sm:max-w-3xl sm:px-6 lg:max-w-5xl lg:py-8">
+            <section class="rounded-[1.6rem] bg-white px-5 py-5 shadow-[0_10px_30px_rgba(0,0,0,0.10)] sm:px-6">
+                <div class="flex items-center justify-between gap-3">
+                    <a href="/lecons" class="text-sm font-semibold text-[#24cfe8] hover:underline">
+                        ← Retour aux leçons
+                    </a>
+                    <p class="text-sm font-semibold text-black/70">
+                        <span id="progressText">{total > 0 ? `1/${total}` : "0/0"}</span>
+                    </p>
+                </div>
+
+                <div class="mt-3 h-3 overflow-hidden rounded-full bg-[#d8f5fb]">
+                    <div
+                        id="progressBar"
+                        class="h-full rounded-full bg-[#24cfe8] transition-[width]"
+                        style={`width: ${total > 0 ? 100 / total : 0}%`}
+                    ></div>
+                </div>
+            </section>
+
+            <section id="lessonInfoBlock" class="rounded-[1.4rem] bg-[#24cfe8] px-4 py-3 text-white shadow-[0_8px_20px_rgba(36,207,232,0.20)] sm:px-5">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/20">
+                        <img src={showerLeconIcon.src} alt="Icône leçon" class="h-8 w-8 object-contain" />
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs uppercase tracking-[0.25em] text-white/85">Leçon</p>
+                        <h1 class="font-title text-2xl leading-none sm:text-3xl">{lesson.titre || "Leçon"}</h1>
+                    </div>
+                </div>
+            </section>
+
+            <section class="rounded-[2rem] bg-white px-4 py-5 shadow-[0_10px_30px_rgba(0,0,0,0.10)] sm:px-6 sm:py-6">
+                {initialSign ? (
+                    <>
+                        <div id="learningSection">
+                            <article id="signCard" class="rounded-[1.4rem] border border-black/5 bg-[#f7fdff] p-4 cursor-pointer">
+                                <div class="flex h-56 items-center justify-center overflow-hidden rounded-[1rem] bg-[#eaf8fb] sm:h-64">
+                                    {initialSign.image ? (
+                                        <img
+                                            id="signImage"
+                                            src={initialSign.image}
+                                            alt={initialSign.nom}
+                                            class="h-full w-full object-contain p-2"
+                                        />
+                                    ) : (
+                                        <div id="signImagePlaceholder" class="text-sm text-black/50">
+                                            Pas d'image
+                                        </div>
+                                    )}
+                                </div>
+                                <p id="signName" class="mt-3 text-center font-title text-3xl uppercase text-black hidden">
+                                    {initialSign.nom}
+                                </p>
+                                <p id="signHint" class="mt-3 text-center text-xl text-black/35">
+                                    Cliquez pour révéler
+                                </p>
+                            </article>
+
+                            <div class="mt-4 grid grid-cols-2 gap-3">
+                                <button
+                                    id="toggleRevealBtn"
+                                    type="button"
+                                    class="rounded-full border-2 border-[#24cfe8] px-4 py-3 text-base font-semibold text-[#24cfe8] transition-colors hover:bg-[#24cfe8]/10 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    Révéler
+                                </button>
+                                <button
+                                    id="nextBtn"
+                                    type="button"
+                                    class="rounded-full bg-[#35e85c] px-4 py-3 text-base font-semibold text-white shadow-[0_8px_18px_rgba(53,232,92,0.25)] transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    Suivant
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="quizSection" class="hidden">
+                            <h2 class="mb-4 text-center font-title text-4xl leading-none text-black sm:text-5xl">
+                                Quel est ce signe ?
+                            </h2>
+
+                            <article class="rounded-[1.4rem] border border-black/5 bg-[#f7fdff] p-4">
+                                <div class="flex h-56 items-center justify-center overflow-hidden rounded-[1rem] bg-[#eaf8fb] sm:h-64">
+                                    <img
+                                        id="quizSignImage"
+                                        src={initialSign.image || ""}
+                                        alt="Signe du quiz"
+                                        class="h-full w-full object-contain p-2"
+                                    />
+                                </div>
+                            </article>
+
+                            <div id="quizOptions" class="mt-4 grid grid-cols-2 gap-3"></div>
+
+                            <button
+                                id="quizNextBtn"
+                                type="button"
+                                class="mt-4 w-full rounded-full bg-[#24cfe8] px-4 py-3 text-base font-semibold text-white shadow-[0_8px_18px_rgba(36,207,232,0.25)] transition-transform hover:-translate-y-0.5"
+                            >
+                                Valider
+                            </button>
+                        </div>
+
+                        <div id="completionSection" class="hidden">
+                            <article class="rounded-[1.5rem] border border-black/5 bg-[#f7fdff] px-4 py-5 shadow-[0_10px_24px_rgba(0,0,0,0.08)] sm:px-5 sm:py-6">
+                                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#24cfe8] text-white sm:h-20 sm:w-20">
+                                    <svg viewBox="0 0 24 24" class="h-8 w-8 fill-current sm:h-10 sm:w-10" aria-hidden="true">
+                                        <path d="M7 3h10v2h2a2 2 0 0 1 2 2v2a5 5 0 0 1-5 5h-1.3A4.8 4.8 0 0 1 13 16.8V19h3v2H8v-2h3v-2.2A4.8 4.8 0 0 1 9.3 14H8a5 5 0 0 1-5-5V7a2 2 0 0 1 2-2h2V3zm10 4v2a3 3 0 0 0 2-2V7h-2zM5 7v0a3 3 0 0 0 2 2V7H5z" />
+                                    </svg>
+                                </div>
+
+                                <h2 class="mt-4 text-center font-title text-3xl leading-none text-black sm:text-4xl">
+                                    Leçon Terminée !
+                                </h2>
+                                <p id="completionLessonTitle" class="mt-1 text-center text-2xl leading-none text-black/85 sm:text-3xl">
+                                    {lesson.titre || "Leçon"}
+                                </p>
+
+                                <div class="mt-5 text-center">
+                                    <p class="text-2xl text-black sm:text-3xl">
+                                            Score : <span id="completionScore">{total}/{total}</span>
+                                    </p>
+                                    <p id="completionResult" class="mt-2 text-base text-black/75 sm:text-lg">
+                                            Résultat : {total} bonne{total > 1 ? "s" : ""} réponse{total > 1 ? "s" : ""} sur {total}
+                                    </p>
+                                    <p class="mt-2 font-title text-5xl text-[#24cfe8] sm:text-6xl">
+                                            +<span id="completionXp">{lessonXp}</span> XP
+                                    </p>
+                                </div>
+
+                                <div class="mt-5 space-y-2.5">
+                                    <button
+                                        id="reviewAgainBtn"
+                                        type="button"
+                                        class="w-full rounded-xl bg-[#24cfe8] px-4 py-2.5 text-xl font-semibold text-white shadow-[0_8px_18px_rgba(36,207,232,0.25)] sm:text-2xl"
+                                    >
+                                        Réviser
+                                    </button>
+                                    <a
+                                        href="/lecons"
+                                        class="block w-full rounded-xl border border-black/20 bg-white px-4 py-2.5 text-center text-xl font-semibold text-black sm:text-2xl"
+                                    >
+                                        Retour aux leçons
+                                    </a>
+                                </div>
+                            </article>
+                        </div>
+                    </>
+                ) : (
+                    <p class="text-center text-black/60">
+                        Aucun signe disponible dans cette leçon pour le moment.
+                    </p>
+                )}
+            </section>
+        </main>
+
+        <div class="mt-8 sm:mt-10">
+            <Footer logoSrc={undefined} />
+        </div>
+    </div>
+</Layout>
+
+<script define:vars={{ signsData, total, quizQuestionCount }}>
+    if (total > 0) {
+        let currentIndex = 0;
+        let isRevealed = false;
+        let quizOrder = [];
+        let quizTotalQuestions = total;
+        let currentQuizIndex = 0;
+        let currentQuizAnswer = "";
+        let quizAnsweredQuestions = 0;
+        let quizCorrectAnswers = 0;
+        let hasAnsweredQuiz = false;
+        let selectedQuizAnswer = "";
+
+        const progressText = document.getElementById("progressText");
+        const progressBar = document.getElementById("progressBar");
+        const lessonInfoBlock = document.getElementById("lessonInfoBlock");
+        const learningSection = document.getElementById("learningSection");
+        const quizSection = document.getElementById("quizSection");
+        const signName = document.getElementById("signName");
+        const signHint = document.getElementById("signHint");
+        const signCard = document.getElementById("signCard");
+        const signImage = document.getElementById("signImage");
+        const toggleRevealBtn = document.getElementById("toggleRevealBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const quizSignImage = document.getElementById("quizSignImage");
+        const quizOptions = document.getElementById("quizOptions");
+        const quizNextBtn = document.getElementById("quizNextBtn");
+        const completionSection = document.getElementById("completionSection");
+        const completionScore = document.getElementById("completionScore");
+        const completionResult = document.getElementById("completionResult");
+        const completionXp = document.getElementById("completionXp");
+        const reviewAgainBtn = document.getElementById("reviewAgainBtn");
+
+        const quizOptionBaseClass =
+            "quiz-option w-full rounded-2xl border border-black/10 bg-white px-4 py-4 text-base font-semibold text-black shadow-[0_6px_16px_rgba(0,0,0,0.07)] transition-all";
+        const quizOptionSelectedClass =
+            "quiz-option w-full rounded-2xl border border-[#24cfe8] bg-[#24cfe8] px-4 py-4 text-base font-semibold text-white shadow-[0_0_0_3px_rgba(36,207,232,0.35)] -translate-y-0.5 transition-all";
+        const quizOptionCorrectClass =
+            "quiz-option w-full rounded-2xl border border-[#2ce252] bg-[#2ce252] px-4 py-4 text-base font-semibold text-white shadow-[0_0_0_3px_rgba(44,226,82,0.25)] transition-all";
+        const quizOptionWrongClass =
+            "quiz-option w-full rounded-2xl border border-[#ff9d9d] bg-[#ffdddd] px-4 py-4 text-base font-semibold text-[#d12626] shadow-[0_0_0_3px_rgba(255,157,157,0.20)] transition-all";
+
+        const resetOptionStyle = (btn) => {
+            btn.className = quizOptionBaseClass;
+            btn.textContent = btn.dataset.baseLabel || btn.textContent || "";
+        };
+
+        const setSelectedOptionStyle = (btn) => {
+            btn.className = quizOptionSelectedClass;
+            btn.textContent = btn.dataset.baseLabel || "";
+        };
+
+        const setCorrectOptionStyle = (btn) => {
+            btn.className = quizOptionCorrectClass;
+            btn.textContent = btn.dataset.baseLabel || "";
+        };
+
+        const setWrongOptionStyle = (btn) => {
+            btn.className = quizOptionWrongClass;
+            btn.textContent = btn.dataset.baseLabel || "";
+        };
+
+        const shuffle = (array) => {
+            const values = [...array];
+            for (let i = values.length - 1; i > 0; i -= 1) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const tmp = values[i];
+                values[i] = values[j];
+                values[j] = tmp;
+            }
+            return values;
+        };
+
+        const renderQuizOptions = (options) => {
+            if (!quizOptions) {
+                return;
+            }
+
+            quizOptions.innerHTML = "";
+
+            options.forEach((option) => {
+                const optionBtn = document.createElement("button");
+                optionBtn.type = "button";
+                optionBtn.className = quizOptionBaseClass;
+                optionBtn.dataset.baseLabel = option;
+                optionBtn.textContent = option;
+
+                optionBtn.addEventListener("click", () => {
+                    if (hasAnsweredQuiz) {
+                        return;
+                    }
+
+                    const allOptions = quizOptions.querySelectorAll(".quiz-option");
+                    allOptions.forEach((btn) => {
+                        resetOptionStyle(btn);
+                    });
+
+                    selectedQuizAnswer = option;
+                    setSelectedOptionStyle(optionBtn);
+                });
+                quizOptions.appendChild(optionBtn);
+            });
+        };
+
+        const startQuiz = () => {
+            if (!learningSection || !quizSection) {
+                return;
+            }
+
+            learningSection.classList.add("hidden");
+            quizSection.classList.remove("hidden");
+            completionSection?.classList.add("hidden");
+            lessonInfoBlock?.classList.add("hidden");
+
+            quizOrder = shuffle([...signsData]);
+            quizTotalQuestions = quizQuestionCount || signsData.length || quizOrder.length;
+            currentQuizIndex = 0;
+            quizAnsweredQuestions = 0;
+            quizCorrectAnswers = 0;
+
+            loadQuizQuestion();
+        };
+
+        const showCompletion = () => {
+            quizSection?.classList.add("hidden");
+            completionSection?.classList.remove("hidden");
+
+            if (progressText) {
+                progressText.textContent = "Terminé";
+            }
+
+            if (progressBar) {
+                progressBar.style.width = "100%";
+            }
+
+            const finalTotal = total;
+            const answeredTotal = quizTotalQuestions;
+            const gainedXp = Math.round(lessonXp * (quizCorrectAnswers / Math.max(1, finalTotal)));
+
+            if (completionScore) {
+                completionScore.textContent = `${quizCorrectAnswers}/${finalTotal}`;
+            }
+
+            if (completionResult) {
+                completionResult.textContent = `Résultat : ${quizCorrectAnswers} bonne${quizCorrectAnswers > 1 ? "s" : ""} réponse${quizCorrectAnswers > 1 ? "s" : ""} sur ${answeredTotal}`;
+            }
+
+            if (completionXp) {
+                completionXp.textContent = String(gainedXp);
+            }
+        };
+
+        const loadQuizQuestion = () => {
+            const quizSign = quizOrder[currentQuizIndex];
+            if (!quizSign) {
+                window.location.href = "/lecons";
+                return;
+            }
+
+            if (progressText) {
+                progressText.textContent = `Quiz ${currentQuizIndex + 1}/${total}`;
+            }
+
+            if (progressBar) {
+                progressBar.style.width = `${((currentQuizIndex + 1) / Math.max(1, total)) * 100}%`;
+            }
+
+            currentQuizAnswer = quizSign.nom;
+            hasAnsweredQuiz = false;
+            selectedQuizAnswer = "";
+
+            if (quizSignImage) {
+                quizSignImage.src = quizSign.image || "";
+                quizSignImage.alt = quizSign.nom;
+            }
+
+            const distractors = signsData
+                .filter((item) => item.nom !== quizSign.nom)
+                .map((item) => item.nom);
+
+            const uniqueDistractors = [...new Set(distractors)].slice(0, 3);
+            const options = shuffle([quizSign.nom, ...uniqueDistractors]);
+            renderQuizOptions(options);
+
+            if (quizNextBtn) {
+                quizNextBtn.textContent = "Valider";
+            }
+        };
+
+        const setRevealState = (revealed) => {
+            isRevealed = revealed;
+
+            if (signName) {
+                signName.classList.toggle("hidden", !revealed);
+            }
+
+            if (signHint) {
+                signHint.textContent = revealed ? "Cliquez pour cacher" : "Cliquez pour révéler";
+            }
+
+            if (toggleRevealBtn) {
+                toggleRevealBtn.textContent = revealed ? "Cacher" : "Révéler";
+            }
+        };
+
+        const refreshUI = () => {
+            const currentSign = signsData[currentIndex];
+            const progressPercent = ((currentIndex + 1) / total) * 100;
+
+            if (progressText) {
+                progressText.textContent = `${currentIndex + 1}/${total}`;
+            }
+
+            if (progressBar) {
+                progressBar.style.width = `${progressPercent}%`;
+            }
+
+            if (signName) {
+                signName.textContent = currentSign.nom;
+            }
+
+            if (signImage) {
+                signImage.src = currentSign.image || "";
+                signImage.alt = currentSign.nom;
+            }
+
+            setRevealState(false);
+
+            if (nextBtn) {
+                nextBtn.disabled = false;
+                nextBtn.textContent = currentIndex === total - 1 ? "Passer au test" : "Suivant";
+            }
+        };
+
+        toggleRevealBtn?.addEventListener("click", () => {
+            setRevealState(!isRevealed);
+        });
+
+        signCard?.addEventListener("click", () => {
+            setRevealState(!isRevealed);
+        });
+
+        nextBtn?.addEventListener("click", () => {
+            if (currentIndex < total - 1) {
+                currentIndex += 1;
+                refreshUI();
+            } else {
+                startQuiz();
+            }
+        });
+
+        quizNextBtn?.addEventListener("click", () => {
+            if (!hasAnsweredQuiz) {
+                if (!selectedQuizAnswer) {
+                    return;
+                }
+
+                hasAnsweredQuiz = true;
+
+                const allOptions = quizOptions?.querySelectorAll(".quiz-option") || [];
+                allOptions.forEach((btn) => {
+                    const label = btn.dataset.baseLabel || "";
+                    const isGood = label === currentQuizAnswer;
+                    const isPicked = label === selectedQuizAnswer;
+
+                    if (isGood) {
+                        setCorrectOptionStyle(btn);
+                    } else if (isPicked) {
+                        setWrongOptionStyle(btn);
+                    } else {
+                        resetOptionStyle(btn);
+                    }
+                });
+
+                if (selectedQuizAnswer === currentQuizAnswer) {
+                    quizCorrectAnswers += 1;
+                }
+
+                quizAnsweredQuestions += 1;
+
+                quizNextBtn.textContent = "Suivant";
+                return;
+            }
+
+            if (currentQuizIndex < quizOrder.length - 1) {
+                currentQuizIndex += 1;
+                loadQuizQuestion();
+                return;
+            }
+
+            showCompletion();
+        });
+
+        reviewAgainBtn?.addEventListener("click", () => {
+            window.location.reload();
+        });
+
+        refreshUI();
+    }
+</script>
+
