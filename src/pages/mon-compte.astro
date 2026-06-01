@@ -12,7 +12,6 @@ import personIcon from "../assets/img/Person_mon_compte.svg?url";
 import settingsIcon from "../assets/img/Settings_mon_compte.svg?url";
 import trophyIcon from "../assets/img/Trophy_mon_compte.svg?url";
 
-
 const formatDate = (value: string) =>
     new Intl.DateTimeFormat("fr-FR", {
         day: "numeric",
@@ -25,12 +24,11 @@ const defaultAvatar = `data:image/svg+xml,${encodeURIComponent(
         <rect width="200" height="200" rx="100" fill="#000000" />
         <circle cx="100" cy="78" r="34" fill="#ffffff" />
         <path d="M42 176c10-34 37-52 58-52s48 18 58 52" fill="#ffffff" />
-    </svg>`
+    </svg>`,
 )}`;
 
 const authCookie = Astro.request.headers.get("cookie") ?? "";
 pb.authStore.loadFromCookie(authCookie);
-
 
 const currentUser = pb.authStore.model;
 
@@ -38,13 +36,19 @@ if (!currentUser) {
     return Astro.redirect("/login");
 }
 
-const profileName = currentUser.pseudo || currentUser.username || currentUser.email || "Votre compte";
+const profileName =
+    currentUser.pseudo ||
+    currentUser.username ||
+    currentUser.email ||
+    "Votre compte";
 const profileEmail = currentUser.email || "";
 const pointsTotal = Number(currentUser.points_totaux ?? 0);
 const profileLevel = Math.max(1, Math.floor(pointsTotal / 250) + 1);
 const profileXp = pointsTotal % 250;
 const xpProgress = Math.min(100, (profileXp / 250) * 100);
-const avatarFile = Array.isArray(currentUser.avatar) ? currentUser.avatar[0] : currentUser.avatar;
+const avatarFile = Array.isArray(currentUser.avatar)
+    ? currentUser.avatar[0]
+    : currentUser.avatar;
 const profileAvatar = avatarFile
     ? `https://odysigne.carnicer.fr/api/files/users/${currentUser.id}/${avatarFile}`
     : defaultAvatar;
@@ -61,144 +65,336 @@ const memberSinceLabel = currentUser.created
     <div class="min-h-screen bg-[#DDFBFF] text-black">
         <Header />
 
-        <main class="mx-auto mt-10 flex w-full max-w-[430px] flex-col gap-6 px-4 py-6 pb-16 sm:mt-14 sm:max-w-3xl sm:px-6 sm:pb-24 lg:max-w-6xl lg:py-10 lg:pb-28">
-            <section class="rounded-[2rem] bg-white px-4 py-6 shadow-[0_10px_30px_rgba(0,0,0,0.08)] sm:px-8 sm:py-8">
+        <main
+            class="mx-auto mt-10 flex w-full max-w-[430px] flex-col gap-6 px-4 py-6 pb-16 sm:mt-14 sm:max-w-3xl sm:px-6 sm:pb-24 lg:max-w-6xl lg:py-10 lg:pb-28"
+        >
+            <section
+                class="rounded-[2rem] bg-white px-4 py-6 shadow-[0_10px_30px_rgba(0,0,0,0.08)] sm:px-8 sm:py-8"
+            >
                 <div class="flex flex-col items-center text-center">
                     <div class="relative">
-                        <div class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-black">
-                            <img data-avatar data-avatar-fallback={defaultAvatar} src={profileAvatar} alt="Avatar du compte" class="h-full w-full object-cover" />
+                        <div
+                            class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-black"
+                        >
+                            <img
+                                id="avatar-img"
+                                data-avatar
+                                data-avatar-fallback={defaultAvatar}
+                                src={profileAvatar}
+                                alt="Avatar du compte"
+                                class="h-full w-full object-cover"
+                            />
                         </div>
-                        <button type="button" class="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-white text-lg shadow-md" aria-label="Modifier la photo de profil">
-                            <img src={cameraIcon} alt="" aria-hidden="true" class="h-4 w-4" />
+
+                        <input
+                            type="file"
+                            id="avatar-upload"
+                            class="hidden"
+                            accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                        />
+
+                        <button
+                            id="avatar-btn"
+                            type="button"
+                            class="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-white text-lg shadow-md hover:bg-gray-50 transition-colors"
+                            aria-label="Modifier la photo de profil"
+                        >
+                            <img
+                                src={cameraIcon}
+                                alt=""
+                                aria-hidden="true"
+                                class="h-4 w-4"
+                            />
                         </button>
                     </div>
 
-                    <h1 data-pseudo class="mt-4 font-title text-3xl text-black">{profileName}</h1>
+                    <h1 data-pseudo class="mt-4 font-title text-3xl text-black">
+                        {profileName}
+                    </h1>
 
-                    <div class="mt-5 w-full rounded-[1.5rem] bg-[#25cfe8] px-5 py-5 text-left text-white shadow-[0_10px_20px_rgba(37,207,232,0.18)]">
+                    <div
+                        class="mt-5 w-full rounded-[1.5rem] bg-[#25cfe8] px-5 py-5 text-left text-white shadow-[0_10px_20px_rgba(37,207,232,0.18)]"
+                    >
                         <div class="flex items-center justify-between gap-4">
                             <div>
-                                <p data-level class="font-title text-2xl leading-none">Niveau {profileLevel}</p>
+                                <p
+                                    data-level
+                                    class="font-title text-2xl leading-none"
+                                >
+                                    Niveau {profileLevel}
+                                </p>
                             </div>
-                            <img src={trophyIcon} alt="" aria-hidden="true" class="h-7 w-7" />
+                            <img
+                                src={trophyIcon}
+                                alt=""
+                                aria-hidden="true"
+                                class="h-7 w-7"
+                            />
                         </div>
-                        <div class="mt-4 h-3 overflow-hidden rounded-full bg-white/75">
-                            <div data-xp-bar style={`width: ${xpProgress}%`} class="h-full rounded-full bg-white"></div>
+                        <div
+                            class="mt-4 h-3 overflow-hidden rounded-full bg-white/75"
+                        >
+                            <div
+                                data-xp-bar
+                                style={`width: ${xpProgress}%`}
+                                class="h-full rounded-full bg-white"
+                            >
+                            </div>
                         </div>
-                        <p data-xp-text class="mt-3 text-sm text-white/90">{profileXp} / 250 XP</p>
+                        <p data-xp-text class="mt-3 text-sm text-white/90">
+                            {profileXp} / 250 XP
+                        </p>
                     </div>
 
-                    <div class="mt-4 w-full rounded-[1.5rem] bg-white px-4 py-4 text-left shadow-[0_6px_18px_rgba(0,0,0,0.06)] ring-1 ring-black/5">
+                    <div
+                        class="mt-4 w-full rounded-[1.5rem] bg-white px-4 py-4 text-left shadow-[0_6px_18px_rgba(0,0,0,0.06)] ring-1 ring-black/5"
+                    >
                         <div class="flex items-center gap-3">
-                            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-red-500 shadow-inner">
-                                <img src={fireIcon} alt="" aria-hidden="true" class="h-7 w-7" />
+                            <div
+                                class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-red-500 shadow-inner"
+                            >
+                                <img
+                                    src={fireIcon}
+                                    alt=""
+                                    aria-hidden="true"
+                                    class="h-7 w-7"
+                                />
                             </div>
                             <div>
-                                <p class="font-title text-2xl leading-none text-black">0</p>
-                                <p class="text-sm text-black/70">Série en cours</p>
+                                <p
+                                    class="font-title text-2xl leading-none text-black"
+                                >
+                                    0
+                                </p>
+                                <p class="text-sm text-black/70">
+                                    Série en cours
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <p data-member-since class="mt-5 text-sm text-black/40">{memberSinceLabel}</p>
+                    <p data-member-since class="mt-5 text-sm text-black/40">
+                        {memberSinceLabel}
+                    </p>
                 </div>
             </section>
 
-            <section class="mx-auto flex w-full max-w-[330px] items-center rounded-full bg-white p-1 shadow-[0_8px_20px_rgba(0,0,0,0.08)] ring-1 ring-black/5 sm:max-w-md">
-                <button data-tab-button="profile" class="flex-1 rounded-full bg-black/10 py-3 text-black transition" aria-label="Profil" aria-pressed="true">
-                    <img src={personIcon} alt="" aria-hidden="true" class="mx-auto h-7 w-7" />
+            <section
+                class="mx-auto flex w-full max-w-[330px] items-center rounded-full bg-white p-1 shadow-[0_8px_20px_rgba(0,0,0,0.08)] ring-1 ring-black/5 sm:max-w-md"
+            >
+                <button
+                    data-tab-button="profile"
+                    class="flex-1 rounded-full bg-black/10 py-3 text-black transition"
+                    aria-label="Profil"
+                    aria-pressed="true"
+                >
+                    <img
+                        src={personIcon}
+                        alt=""
+                        aria-hidden="true"
+                        class="mx-auto h-7 w-7"
+                    />
                 </button>
-                <button data-tab-button="settings" class="flex-1 rounded-full py-3 text-black/70 transition" aria-label="Paramètres" aria-pressed="false">
-                    <img src={settingsIcon} alt="" aria-hidden="true" class="mx-auto h-7 w-7" />
+                <button
+                    data-tab-button="settings"
+                    class="flex-1 rounded-full py-3 text-black/70 transition"
+                    aria-label="Paramètres"
+                    aria-pressed="false"
+                >
+                    <img
+                        src={settingsIcon}
+                        alt=""
+                        aria-hidden="true"
+                        class="mx-auto h-7 w-7"
+                    />
                 </button>
             </section>
 
             <div data-panel="profile" class="space-y-6">
-                <section class="rounded-[2rem] bg-white px-5 py-7 shadow-[0_12px_30px_rgba(0,0,0,0.07)] ring-1 ring-black/5 sm:px-8">
+                <section
+                    class="rounded-[2rem] bg-white px-5 py-7 shadow-[0_12px_30px_rgba(0,0,0,0.07)] ring-1 ring-black/5 sm:px-8"
+                >
                     <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 items-center justify-center rounded-full bg-[#25cfe8] text-white">
-                            <img src={personIcon} alt="" aria-hidden="true" class="h-6 w-6" />
+                        <div
+                            class="flex h-11 w-11 items-center justify-center rounded-full bg-[#25cfe8] text-white"
+                        >
+                            <img
+                                src={personIcon}
+                                alt=""
+                                aria-hidden="true"
+                                class="h-6 w-6"
+                            />
                         </div>
-                        <h2 class="font-title text-2xl text-black">Informations du profil</h2>
+                        <h2 class="font-title text-2xl text-black">
+                            Informations du profil
+                        </h2>
                     </div>
 
                     <form id="profile-form" class="mt-7 space-y-5">
                         <label class="block">
-                            <span class="mb-2 block text-sm text-black/80">Pseudo</span>
-                            <input data-name-input type="text" value={profileName} placeholder="Votre pseudo" class="w-full rounded-2xl border-0 bg-white px-4 py-3 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]" />
+                            <span class="mb-2 block text-sm text-black/80"
+                                >Pseudo</span
+                            >
+                            <input
+                                data-name-input
+                                type="text"
+                                value={profileName}
+                                placeholder="Votre pseudo"
+                                class="w-full rounded-2xl border-0 bg-white px-4 py-3 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]"
+                            />
                         </label>
-                        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25cfe8] px-4 py-3 text-white shadow-[0_8px_18px_rgba(37,207,232,0.35)] transition hover:bg-[#17bfd7]">
+                        <button
+                            type="submit"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25cfe8] px-4 py-3 text-white shadow-[0_8px_18px_rgba(37,207,232,0.35)] transition hover:bg-[#17bfd7]"
+                        >
                             <span>✎</span>
-                            <span class="font-title text-lg">Sauvegarder les modifications</span>
+                            <span class="font-title text-lg"
+                                >Sauvegarder les modifications</span
+                            >
                         </button>
 
-                        <p data-form-message class="text-center text-sm text-black/60"></p>
+                        <p
+                            data-form-message
+                            class="text-center text-sm text-black/60"
+                        >
+                        </p>
                     </form>
                 </section>
 
-                <section class="rounded-[2rem] bg-white px-5 py-7 shadow-[0_12px_30px_rgba(0,0,0,0.07)] ring-1 ring-black/5 sm:px-8">
+                <section
+                    class="rounded-[2rem] bg-white px-5 py-7 shadow-[0_12px_30px_rgba(0,0,0,0.07)] ring-1 ring-black/5 sm:px-8"
+                >
                     <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 items-center justify-center rounded-lg border-4 border-[#25cfe8] text-[#25cfe8]">
-                            <img src={calendarIcon} alt="" aria-hidden="true" class="h-6 w-6" />
+                        <div
+                            class="flex h-11 w-11 items-center justify-center rounded-lg border-4 border-[#25cfe8] text-[#25cfe8]"
+                        >
+                            <img
+                                src={calendarIcon}
+                                alt=""
+                                aria-hidden="true"
+                                class="h-6 w-6"
+                            />
                         </div>
-                        <h2 class="font-title text-2xl text-black">Activité récente</h2>
+                        <h2 class="font-title text-2xl text-black">
+                            Activité récente
+                        </h2>
                     </div>
                 </section>
             </div>
 
-            <section data-panel="settings" class="hidden rounded-[2rem] bg-white px-5 py-7 shadow-[0_12px_30px_rgba(0,0,0,0.07)] ring-1 ring-black/5 sm:px-8">
+            <section
+                data-panel="settings"
+                class="hidden rounded-[2rem] bg-white px-5 py-7 shadow-[0_12px_30px_rgba(0,0,0,0.07)] ring-1 ring-black/5 sm:px-8"
+            >
                 <div class="flex items-center gap-3">
-                    <div class="flex h-11 w-11 items-center justify-center rounded-full bg-[#25cfe8] text-white">
-                        <img src={settingsIcon} alt="" aria-hidden="true" class="h-6 w-6" />
+                    <div
+                        class="flex h-11 w-11 items-center justify-center rounded-full bg-[#25cfe8] text-white"
+                    >
+                        <img
+                            src={settingsIcon}
+                            alt=""
+                            aria-hidden="true"
+                            class="h-6 w-6"
+                        />
                     </div>
                     <h2 class="font-title text-2xl text-black">Réglages</h2>
                 </div>
 
                 <div class="mt-7 space-y-7">
                     <section>
-                        <h3 class="font-title text-2xl text-[#25cfe8]">Sécurité</h3>
+                        <h3 class="font-title text-2xl text-[#25cfe8]">
+                            Sécurité
+                        </h3>
                         <div class="mt-5 space-y-5">
                             <label class="block">
-                                <span class="mb-2 flex items-center gap-2 text-sm text-black">
-                                    <svg class="h-4 w-4 shrink-0 text-black" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                        <path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm-3 8V6a3 3 0 0 1 6 0v3H9Z" />
+                                <span
+                                    class="mb-2 flex items-center gap-2 text-sm text-black"
+                                >
+                                    <svg
+                                        class="h-4 w-4 shrink-0 text-black"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm-3 8V6a3 3 0 0 1 6 0v3H9Z"
+                                        ></path>
                                     </svg>
                                     <span>Changer le mot de passe</span>
                                 </span>
-                                <input type="password" placeholder="" class="h-12 w-full rounded-2xl border-0 bg-white px-4 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]" />
+                                <input
+                                    type="password"
+                                    placeholder=""
+                                    class="h-12 w-full rounded-2xl border-0 bg-white px-4 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]"
+                                />
                             </label>
 
                             <label class="block">
-                                <span class="mb-2 block text-sm text-black">Confirmer le mot de passe</span>
-                                <input type="password" placeholder="" class="h-12 w-full rounded-2xl border-0 bg-white px-4 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]" />
+                                <span class="mb-2 block text-sm text-black"
+                                    >Confirmer le mot de passe</span
+                                >
+                                <input
+                                    type="password"
+                                    placeholder=""
+                                    class="h-12 w-full rounded-2xl border-0 bg-white px-4 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]"
+                                />
                             </label>
                         </div>
                     </section>
 
                     <section>
                         <h3 class="flex items-center gap-2 text-sm text-black">
-                            <svg class="h-4 w-4 shrink-0 text-black" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                <path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm-3 8V6a3 3 0 0 1 6 0v3H9Z" />
+                            <svg
+                                class="h-4 w-4 shrink-0 text-black"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm-3 8V6a3 3 0 0 1 6 0v3H9Z"
+                                ></path>
                             </svg>
                             <span>Changer l'adresse mail</span>
                         </h3>
                         <div class="mt-4 space-y-5">
                             <label class="block">
-                                <span class="mb-2 block text-sm text-black">Nouvelle adresse mail</span>
-                                <input type="email" placeholder="" class="h-12 w-full rounded-2xl border-0 bg-white px-4 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]" />
+                                <span class="mb-2 block text-sm text-black"
+                                    >Nouvelle adresse mail</span
+                                >
+                                <input
+                                    type="email"
+                                    placeholder=""
+                                    class="h-12 w-full rounded-2xl border-0 bg-white px-4 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]"
+                                />
                             </label>
 
                             <label class="block">
-                                <span class="mb-2 block text-sm text-black">Confirmer l'adresse mail</span>
-                                <input type="email" placeholder="" class="h-12 w-full rounded-2xl border-0 bg-white px-4 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]" />
+                                <span class="mb-2 block text-sm text-black"
+                                    >Confirmer l'adresse mail</span
+                                >
+                                <input
+                                    type="email"
+                                    placeholder=""
+                                    class="h-12 w-full rounded-2xl border-0 bg-white px-4 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]"
+                                />
                             </label>
                         </div>
                     </section>
 
-                    <section class="rounded-[1.75rem] border border-red-300 bg-red-100 p-5">
-                        <h3 class="font-title text-xl text-red-600">Zone de danger</h3>
-                        <p class="mt-2 text-sm text-red-700">La suppression de votre compte est irréversible. Toutes vos données seront perdues.</p>
-                        <button type="button" class="mt-5 w-full rounded-2xl bg-red-500 px-4 py-3 text-white shadow-[0_8px_18px_rgba(239,68,68,0.3)] transition hover:bg-red-600">
+                    <section
+                        class="rounded-[1.75rem] border border-red-300 bg-red-100 p-5"
+                    >
+                        <h3 class="font-title text-xl text-red-600">
+                            Zone de danger
+                        </h3>
+                        <p class="mt-2 text-sm text-red-700">
+                            La suppression de votre compte est irréversible.
+                            Toutes vos données seront perdues.
+                        </p>
+                        <button
+                            type="button"
+                            class="mt-5 w-full rounded-2xl bg-red-500 px-4 py-3 text-white shadow-[0_8px_18px_rgba(239,68,68,0.3)] transition hover:bg-red-600"
+                        >
                             Supprimer mon compte
                         </button>
                     </section>
@@ -229,7 +425,19 @@ const memberSinceLabel = currentUser.created
         const xpBar = document.querySelector("[data-xp-bar]");
         const memberSince = document.querySelector("[data-member-since]");
         const nameInput = document.querySelector("[data-name-input]");
-        const tabButtons = Array.from(document.querySelectorAll("[data-tab-button]"));
+
+        // Nouveaux éléments pour l'avatar
+        const avatarImg = document.getElementById(
+            "avatar-img",
+        ) as HTMLImageElement;
+        const avatarUpload = document.getElementById(
+            "avatar-upload",
+        ) as HTMLInputElement;
+        const avatarBtn = document.getElementById("avatar-btn");
+
+        const tabButtons = Array.from(
+            document.querySelectorAll("[data-tab-button]"),
+        );
         const panels = Array.from(document.querySelectorAll("[data-panel]"));
 
         pb.authStore.loadFromCookie(document.cookie);
@@ -254,16 +462,59 @@ const memberSinceLabel = currentUser.created
             return;
         }
 
-        const pseudoValue = user.pseudo || user.username || user.email || "Mon compte";
+        // --- AFFICHAGE DE LA PHOTO DE PROFIL CÔTÉ CLIENT ---
+        if (avatarImg && user.avatar) {
+            avatarImg.src = pb.files.getUrl(user, user.avatar);
+        }
+
+        // --- LOGIQUE DE CHANGEMENT DE PHOTO ---
+        if (avatarBtn && avatarUpload) {
+            // Clic sur l'icône appareil photo -> ouvre le gestionnaire de fichiers
+            avatarBtn.addEventListener("click", () => {
+                avatarUpload.click();
+            });
+
+            // Envoi du fichier lors de la sélection
+            avatarUpload.addEventListener("change", async (e) => {
+                const target = e.target as HTMLInputElement;
+                if (!target.files || target.files.length === 0) return;
+
+                const file = target.files[0];
+                const formData = new FormData();
+                formData.append("avatar", file);
+
+                try {
+                    // Visuel "Chargement" sur le bouton (Optionnel)
+                    avatarBtn.style.opacity = "0.5";
+
+                    await pb.collection("users").update(user.id, formData);
+
+                    // On recharge la page pour mettre à jour la photo partout (y compris dans le Header)
+                    window.location.reload();
+                } catch (error) {
+                    console.error("Erreur d'upload :", error);
+                    alert(
+                        "Une erreur est survenue lors de l'envoi de la photo.",
+                    );
+                    avatarBtn.style.opacity = "1"; // On remet le bouton normal en cas d'erreur
+                }
+            });
+        }
+
+        const pseudoValue =
+            user.pseudo || user.username || user.email || "Mon compte";
         const pointsTotal = Number(user.points_totaux ?? 0);
         const currentLevel = Math.max(1, Math.floor(pointsTotal / 250) + 1);
         const currentXp = pointsTotal % 250;
         if (pseudo) pseudo.textContent = pseudoValue;
         if (level) level.textContent = `Niveau ${currentLevel}`;
         if (xpText) xpText.textContent = `${currentXp} / 250 XP`;
-        if (xpBar instanceof HTMLElement) xpBar.style.width = `${(currentXp / 250) * 100}%`;
-        if (memberSince && user.created) memberSince.textContent = `Membre depuis le ${formatDate(user.created)}`;
-        if (nameInput instanceof HTMLInputElement) nameInput.value = pseudoValue;
+        if (xpBar instanceof HTMLElement)
+            xpBar.style.width = `${(currentXp / 250) * 100}%`;
+        if (memberSince && user.created)
+            memberSince.textContent = `Membre depuis le ${formatDate(user.created)}`;
+        if (nameInput instanceof HTMLInputElement)
+            nameInput.value = pseudoValue;
 
         const setActiveTab = (tabName: string) => {
             tabButtons.forEach((button) => {
@@ -283,7 +534,10 @@ const memberSinceLabel = currentUser.created
                     return;
                 }
 
-                panel.classList.toggle("hidden", panel.dataset.panel !== tabName);
+                panel.classList.toggle(
+                    "hidden",
+                    panel.dataset.panel !== tabName,
+                );
             });
         };
 
@@ -311,7 +565,10 @@ const memberSinceLabel = currentUser.created
                     message.textContent = "";
                 }
 
-                const updatedPseudo = nameInput instanceof HTMLInputElement ? nameInput.value.trim() : pseudoValue;
+                const updatedPseudo =
+                    nameInput instanceof HTMLInputElement
+                        ? nameInput.value.trim()
+                        : pseudoValue;
 
                 try {
                     await pb.collection("users").update(user.id, {
@@ -326,7 +583,8 @@ const memberSinceLabel = currentUser.created
                 } catch (error) {
                     console.error("Unable to update the profile:", error);
                     if (message) {
-                        message.textContent = "Impossible d'enregistrer les modifications.";
+                        message.textContent =
+                            "Impossible d'enregistrer les modifications.";
                     }
                 }
             });
