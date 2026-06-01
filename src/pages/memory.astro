@@ -67,7 +67,7 @@ function getImageUrl(record: any): string {
     <main class="flex-1 mx-auto mt-6 max-w-4xl w-full px-4 py-8">
       <div class="mb-6">
         <a
-          href="/accueil"
+          href="/arcade"
           class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-4"
         >
           <svg
@@ -116,14 +116,20 @@ function getImageUrl(record: any): string {
                 ?
               </div>
               {signe.type === "image" ? (
-                <div class="sign-image hidden w-full h-full bg-white p-2" style="display:flex; align-items:center; justify-content:center;">
+                <div
+                  class="sign-image w-full h-full bg-white p-2 items-center justify-center"
+                  style="display: none;"
+                >
                   <img
                     class="max-w-full max-h-full object-contain"
                     alt={signe.nom_signe}
                   />
                 </div>
               ) : (
-                <div class="sign-text hidden w-full h-full bg-white p-2" style="display:flex; align-items:center; justify-content:center;"></div>
+                <div
+                  class="sign-text w-full h-full bg-white p-2 items-center justify-center text-2xl font-semibold text-black text-center"
+                  style="display: none;"
+                />
               )}
             </div>
           ))
@@ -146,23 +152,23 @@ function getImageUrl(record: any): string {
 </Layout>
 
 <script>
+  import { attribuerXP } from "../lib/xp.ts";
+
   let flipped: string[] = [];
   let matched: string[] = [];
   let timeLeft = 120;
   let timerInterval: number | null = null;
   let gameOver = false;
-  let isChecking = false; // Variable pour bloquer les clics pendant la vérification
+  let isChecking = false;
 
   const cardsContainer = document.getElementById("game-board");
   const foundCount = document.getElementById("found");
   const timerDisplay = document.getElementById("timer");
   const resetBtn = document.getElementById("reset-btn");
 
-  // Fonction pour mélanger les cartes aléatoirement
   function shuffleCards() {
     const cards = Array.from(document.querySelectorAll(".memory-card"));
 
-    // Fisher-Yates shuffle
     for (let i = cards.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       const temp = cards[i];
@@ -170,34 +176,35 @@ function getImageUrl(record: any): string {
       cards[j] = temp;
     }
 
-    // Réinsérer les cartes mélangées dans le DOM
     cards.forEach((card, index) => {
       card.setAttribute("data-index", index.toString());
       cardsContainer?.appendChild(card);
     });
   }
 
-  // Assigner les images aux cartes
   function setupCards() {
     const cards = document.querySelectorAll(".memory-card");
     cards.forEach((card) => {
       const cardType = card.getAttribute("data-type");
       const imageUrl = card.getAttribute("data-image");
+      const signName = card.getAttribute("data-sign-name");
 
       if (cardType === "image") {
-        const imgContainer = card.querySelector(".sign-image");
-        const imgElement = imgContainer?.querySelector(
-          "img",
+        const imgElement = card.querySelector(
+          ".sign-image img",
         ) as HTMLImageElement;
         if (imgElement) {
           imgElement.src = imageUrl || "";
         }
+      } else if (cardType === "text") {
+        const textElement = card.querySelector(".sign-text") as HTMLElement;
+        if (textElement && signName) {
+          textElement.textContent = signName;
+        }
       }
-      // Les cartes texte n'ont pas besoin de setup - le texte est déjà dans le HTML
     });
   }
 
-  // Démarrer le timer
   function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = window.setInterval(() => {
@@ -211,7 +218,7 @@ function getImageUrl(record: any): string {
   }
 
   function flipCard(card: Element) {
-    if (gameOver || isChecking) return; // Bloquer les clics pendant la vérification
+    if (gameOver || isChecking) return;
 
     const index = card.getAttribute("data-index");
     if (matched.includes(index!) || flipped.includes(index!)) {
@@ -235,7 +242,7 @@ function getImageUrl(record: any): string {
     flipped.push(index!);
 
     if (flipped.length === 2) {
-      isChecking = true; // Bloquer les clics
+      isChecking = true;
       checkMatch();
     }
   }
@@ -256,7 +263,7 @@ function getImageUrl(record: any): string {
       if (card2) card2.classList.add("matched");
       foundCount!.textContent = (matched.length / 2).toString();
 
-      isChecking = false; // Débloquer les clics
+      isChecking = false;
 
       if (matched.length === document.querySelectorAll(".memory-card").length) {
         endGame(true);
@@ -265,31 +272,44 @@ function getImageUrl(record: any): string {
       setTimeout(() => {
         const signBack1 = card1?.querySelector(".sign-back") as HTMLElement;
         const signImage1 = card1?.querySelector(".sign-image") as HTMLElement;
+        const signText1 = card1?.querySelector(".sign-text") as HTMLElement;
         const signBack2 = card2?.querySelector(".sign-back") as HTMLElement;
         const signImage2 = card2?.querySelector(".sign-image") as HTMLElement;
+        const signText2 = card2?.querySelector(".sign-text") as HTMLElement;
 
         if (card1) card1.classList.remove("flipped");
         if (card2) card2.classList.remove("flipped");
         if (signBack1) signBack1.classList.remove("hidden");
         if (signImage1) signImage1.classList.add("hidden");
+        if (signText1) signText1.classList.add("hidden");
         if (signBack2) signBack2.classList.remove("hidden");
         if (signImage2) signImage2.classList.add("hidden");
+        if (signText2) signText2.classList.add("hidden");
 
-        isChecking = false; // Débloquer les clics après le délai
+        isChecking = false;
       }, 1000);
     }
 
     flipped = [];
   }
 
-  function endGame(won: boolean) {
+  async function endGame(won: boolean) {
     gameOver = true;
     if (timerInterval) clearInterval(timerInterval);
 
+    // Attribution de l'XP : 1 paire = 1 point, max 8
+    const pairesTrouvees = matched.length / 2;
+    const totalPaires = 8;
+    const xpGagnee = await attribuerXP(pairesTrouvees, totalPaires);
+
     if (won) {
-      alert("🎉 Bravo! Tu as trouvé toutes les paires!");
+      alert(
+        `🎉 Bravo! Tu as trouvé toutes les paires!\n✨ Tu as gagné + ${xpGagnee} XP !`,
+      );
     } else {
-      alert("⏰ Temps écoulé! Recommence le jeu.");
+      alert(
+        `⏰ Temps écoulé! Tu as trouvé ${pairesTrouvees} paires.\n✨ Tu as gagné + ${xpGagnee} XP.\nRecommence le jeu.`,
+      );
       resetGame();
     }
   }
@@ -316,7 +336,6 @@ function getImageUrl(record: any): string {
     startTimer();
   }
 
-  // Initialisation
   setupCards();
   shuffleCards();
 
@@ -327,7 +346,6 @@ function getImageUrl(record: any): string {
 
   resetBtn?.addEventListener("click", resetGame);
 
-  // Démarrer le timer au chargement
   startTimer();
 </script>
 
@@ -337,6 +355,10 @@ function getImageUrl(record: any): string {
   }
 
   .memory-card.flipped .sign-image {
+    display: flex !important;
+  }
+
+  .memory-card.flipped .sign-text {
     display: flex !important;
   }
 

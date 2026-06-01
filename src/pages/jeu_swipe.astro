@@ -28,7 +28,11 @@ function getImageUrl(record: any): string {
 	<div class="bg-white min-h-screen flex flex-col overflow-x-hidden">
 		<Header />
 
-		<main class="flex-1 mx-auto max-w-2xl w-full px-4 py-4 pt-14 md:pt-16">
+		<main
+			id="swipe-main"
+			data-signes={JSON.stringify(signes)}
+			class="flex-1 mx-auto max-w-2xl w-full px-4 py-4 pt-14 md:pt-16"
+		>
 			<div class="mb-4">
 				<a
 					href="/arcade"
@@ -48,42 +52,83 @@ function getImageUrl(record: any): string {
 					</svg>
 					Retour
 				</a>
-				<h1 class="font-title text-2xl text-black">Swipe Vrai ou Faux</h1>
+				<h1 class="font-title text-2xl text-black">
+					Swipe Vrai ou Faux
+				</h1>
 			</div>
 
 			<div class="flex flex-col items-center gap-4">
 				<div class="flex gap-3 text-center">
-					<div class="bg-blue-100 rounded-lg px-3 py-1.5 border-2 border-blue">
-						<p class="text-xs text-blue font-semibold">Bonnes réponses</p>
+					<div
+						class="bg-blue-100 rounded-lg px-3 py-1.5 border-2 border-blue"
+					>
+						<p class="text-xs text-blue font-semibold">
+							Bonnes réponses
+						</p>
 						<p id="score" class="text-xl font-bold text-blue">0</p>
 					</div>
-					<div class="bg-red-100 rounded-lg px-3 py-1.5 border-2 border-red-500">
-						<p class="text-xs text-red-500 font-semibold">Erreurs</p>
-						<p id="errors" class="text-xl font-bold text-red-500">0</p>
+					<div
+						class="bg-red-100 rounded-lg px-3 py-1.5 border-2 border-red-500"
+					>
+						<p class="text-xs text-red-500 font-semibold">
+							Erreurs
+						</p>
+						<p id="errors" class="text-xl font-bold text-red-500">
+							0
+						</p>
 					</div>
 				</div>
 
 				<div class="w-full max-w-sm">
-					<div class="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-black/45">
+					<div
+						class="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-black/45"
+					>
 						<span>Gauche = faux</span>
 						<span>Droite = vrai</span>
 					</div>
 
 					<div class="relative">
-						<div id="swipeCard" class="relative overflow-hidden rounded-3xl border border-black/5 bg-white shadow-soft touch-none select-none transition-transform duration-200 ease-out" style="touch-action: pan-y;">
-							<div id="successFlash" class="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-emerald-500/0 text-white opacity-0 transition-all duration-200">
-								<span id="successText" class="rounded-full bg-black/20 px-4 py-2 text-sm font-bold tracking-wide">Correct !</span>
+						<div
+							id="swipeCard"
+							class="relative overflow-hidden rounded-3xl border border-black/5 bg-white shadow-soft touch-none select-none transition-transform duration-200 ease-out"
+							style="touch-action: pan-y;"
+						>
+							<div
+								id="successFlash"
+								class="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-emerald-500/0 text-white opacity-0 transition-all duration-200"
+							>
+								<span
+									id="successText"
+									class="rounded-full bg-black/20 px-4 py-2 text-sm font-bold tracking-wide"
+									>Correct !</span
+								>
 							</div>
-							<div class="absolute inset-x-0 top-0 z-10 flex justify-between px-4 pt-4 text-xs font-bold uppercase tracking-[0.18em] pointer-events-none">
-								<span id="leftLabel" class="rounded-full bg-black/75 px-3 py-1 text-white opacity-0 transition-opacity">Faux</span>
-								<span id="rightLabel" class="rounded-full bg-blue px-3 py-1 text-white opacity-0 transition-opacity">Vrai</span>
+							<div
+								class="absolute inset-x-0 top-0 z-10 flex justify-between px-4 pt-4 text-xs font-bold uppercase tracking-[0.18em] pointer-events-none"
+							>
+								<span
+									id="leftLabel"
+									class="rounded-full bg-black/75 px-3 py-1 text-white opacity-0 transition-opacity"
+									>Faux</span
+								>
+								<span
+									id="rightLabel"
+									class="rounded-full bg-blue px-3 py-1 text-white opacity-0 transition-opacity"
+									>Vrai</span
+								>
 							</div>
 
-							<div class="relative z-10 flex min-h-[28rem] flex-col items-center justify-center gap-4 px-6 py-8">
-								<div class="rounded-full bg-blue/10 px-4 py-1 text-sm font-semibold text-blue">
+							<div
+								class="relative z-10 flex min-h-[28rem] flex-col items-center justify-center gap-4 px-6 py-8"
+							>
+								<div
+									class="rounded-full bg-blue/10 px-4 py-1 text-sm font-semibold text-blue"
+								>
 									Swipe la carte
 								</div>
-								<div class="w-full rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5">
+								<div
+									class="w-full rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/5"
+								>
 									<img
 										id="signImage"
 										src=""
@@ -92,15 +137,27 @@ function getImageUrl(record: any): string {
 									/>
 								</div>
 								<div class="text-center">
-									<p class="text-xs uppercase tracking-[0.25em] text-black/40">Question</p>
-									<p id="questionText" class="mt-2 font-body text-xl leading-snug text-black"></p>
+									<p
+										class="text-xs uppercase tracking-[0.25em] text-black/40"
+									>
+										Question
+									</p>
+									<p
+										id="questionText"
+										class="mt-2 font-body text-xl leading-snug text-black"
+									>
+									</p>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<div id="feedback" class="w-full max-w-sm min-h-14 rounded-2xl flex items-center justify-center font-semibold text-base opacity-0 transition-opacity"></div>
+				<div
+					id="feedback"
+					class="w-full max-w-sm min-h-14 rounded-2xl flex items-center justify-center font-semibold text-base opacity-0 transition-opacity"
+				>
+				</div>
 			</div>
 		</main>
 
@@ -108,17 +165,22 @@ function getImageUrl(record: any): string {
 	</div>
 </Layout>
 
-<script define:vars={{ signes }}>
-	let currentSigne = null;
+<script>
+	import { attribuerXP } from "../lib/xp";
+
+	const mainEl = document.getElementById("swipe-main");
+	const signes = mainEl ? JSON.parse(mainEl.dataset.signes || "[]") : [];
+
+	let currentSigne: any = null;
 	let promptName = "";
-	let correctDirection = null;
+	let correctDirection: string | null = null;
 	let answered = false;
 	let score = 0;
 	let errors = 0;
 	let playedSigns = new Set();
 
 	const swipeCard = document.getElementById("swipeCard");
-	const signImage = document.getElementById("signImage");
+	const signImage = document.getElementById("signImage") as HTMLImageElement;
 	const questionText = document.getElementById("questionText");
 	const feedback = document.getElementById("feedback");
 	const scoreNode = document.getElementById("score");
@@ -132,20 +194,21 @@ function getImageUrl(record: any): string {
 	const RESET_DELAY = 1400;
 
 	let pointerActive = false;
-	let pointerId = null;
+	let pointerId: number | null = null;
 	let startX = 0;
 	let startY = 0;
 	let deltaX = 0;
 	let deltaY = 0;
 
-	function getImageUrl(record) {
+	function getImageUrl(record: any) {
 		if (record.image) {
 			return `https://odysigne.carnicer.fr/api/files/signes/${record.id}/${record.image}`;
 		}
 		return "";
 	}
 
-	function setCardTransform(x, y) {
+	function setCardTransform(x: number, y: number) {
+		if (!swipeCard || !leftLabel || !rightLabel) return;
 		const rotation = x / 18;
 		swipeCard.style.transform = `translate(${x}px, ${y * 0.12}px) rotate(${rotation}deg)`;
 		leftLabel.style.opacity = x < -20 ? "1" : "0";
@@ -153,10 +216,23 @@ function getImageUrl(record: any): string {
 	}
 
 	function resetCard() {
+		if (
+			!swipeCard ||
+			!successFlash ||
+			!successText ||
+			!leftLabel ||
+			!rightLabel
+		)
+			return;
 		swipeCard.style.transition = "transform 200ms ease-out";
 		swipeCard.style.transform = "translate(0px, 0px) rotate(0deg)";
-		swipeCard.classList.remove("border-emerald-500", "bg-emerald-100", "shadow-lg");
-		successFlash.className = "pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-emerald-500/0 text-white opacity-0 transition-all duration-200";
+		swipeCard.classList.remove(
+			"border-emerald-500",
+			"bg-emerald-100",
+			"shadow-lg",
+		);
+		successFlash.className =
+			"pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-emerald-500/0 text-white opacity-0 transition-all duration-200";
 		successText.textContent = "Correct !";
 		leftLabel.style.opacity = "0";
 		rightLabel.style.opacity = "0";
@@ -165,29 +241,37 @@ function getImageUrl(record: any): string {
 		}, 220);
 	}
 
-	function showSummary() {
-		document.querySelector("main").innerHTML = `
-			<div class="flex flex-col items-center justify-center min-h-[70vh] gap-8 text-center px-4">
-				<h2 class="font-title text-3xl text-black">Bravo ! 🎉</h2>
-				<p class="text-xl text-gray-600">Vous avez révisé tous les signes !</p>
-				<div class="flex gap-8 bg-white p-8 rounded-2xl shadow-md border border-black/5">
-					<div class="text-center">
-						<p class="text-sm text-gray-600">Bonnes réponses</p>
-						<p class="text-4xl font-bold text-green-600">${score}</p>
-					</div>
-					<div class="text-center">
-						<p class="text-sm text-gray-600">Erreurs</p>
-						<p class="text-4xl font-bold text-red-600">${errors}</p>
-					</div>
-				</div>
-				<a href="/arcade" class="px-8 py-3 bg-blue text-white rounded-lg font-semibold hover:bg-blue/90 transition-colors">
-					Retour à l'arcade
-				</a>
-			</div>
-		`;
+	async function showSummary() {
+		if (!mainEl) return;
+
+		const totalQuestions = score + errors;
+		const xpGagnee = await attribuerXP(score, totalQuestions);
+
+		mainEl.innerHTML = `
+            <div class="flex flex-col items-center justify-center min-h-[70vh] gap-8 text-center px-4">
+                <h2 class="font-title text-3xl text-black">Bravo ! 🎉</h2>
+                <p class="text-xl text-gray-600">Vous avez révisé tous les signes !</p>
+                <p class="text-2xl text-blue font-bold">✨ + ${xpGagnee} XP gagnés !</p>
+                <div class="flex gap-8 bg-white p-8 rounded-2xl shadow-md border border-black/5">
+                    <div class="text-center">
+                        <p class="text-sm text-gray-600">Bonnes réponses</p>
+                        <p class="text-4xl font-bold text-green-600">${score}</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm text-gray-600">Erreurs</p>
+                        <p class="text-4xl font-bold text-red-600">${errors}</p>
+                    </div>
+                </div>
+                <a href="/arcade" class="px-8 py-3 bg-blue text-white rounded-lg font-semibold hover:bg-blue/90 transition-colors">
+                    Retour à l'arcade
+                </a>
+            </div>
+        `;
 	}
 
 	function initGame() {
+		if (!signImage || !questionText || !feedback) return;
+
 		if (signes.length < 2) {
 			console.error("Pas assez de signes disponibles");
 			return;
@@ -231,25 +315,44 @@ function getImageUrl(record: any): string {
 		questionText.textContent = `Ce signe correspond-il à "${promptName}" ?`;
 		answered = false;
 		feedback.textContent = "";
-		feedback.className = "w-full max-w-sm min-h-14 rounded-2xl flex items-center justify-center font-semibold text-base opacity-0 transition-opacity";
+		feedback.className =
+			"w-full max-w-sm min-h-14 rounded-2xl flex items-center justify-center font-semibold text-base opacity-0 transition-opacity";
 		resetCard();
 	}
 
-	function finishQuestion(direction) {
-		if (answered) return;
+	function finishQuestion(direction: string) {
+		if (
+			answered ||
+			!swipeCard ||
+			!scoreNode ||
+			!errorsNode ||
+			!feedback ||
+			!successFlash ||
+			!successText ||
+			!leftLabel ||
+			!rightLabel
+		)
+			return;
 
 		answered = true;
 		const isCorrect = direction === correctDirection;
 
-		swipeCard.style.transition = "transform 260ms ease-out, opacity 260ms ease-out";
+		swipeCard.style.transition =
+			"transform 260ms ease-out, opacity 260ms ease-out";
 
 		if (isCorrect) {
 			score += 1;
-			scoreNode.textContent = score;
+			scoreNode.textContent = score.toString();
 			feedback.textContent = "✓ Correct !";
-			feedback.className = "w-full max-w-sm min-h-14 rounded-2xl flex items-center justify-center font-semibold text-base opacity-100 transition-opacity bg-green-100 text-green-700";
-			swipeCard.classList.add("border-emerald-500", "bg-emerald-100", "shadow-lg");
-			successFlash.className = "pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-emerald-500/85 text-white opacity-100 transition-all duration-200";
+			feedback.className =
+				"w-full max-w-sm min-h-14 rounded-2xl flex items-center justify-center font-semibold text-base opacity-100 transition-opacity bg-green-100 text-green-700";
+			swipeCard.classList.add(
+				"border-emerald-500",
+				"bg-emerald-100",
+				"shadow-lg",
+			);
+			successFlash.className =
+				"pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-emerald-500/85 text-white opacity-100 transition-all duration-200";
 			window.requestAnimationFrame(() => {
 				swipeCard.style.transform = "translate(0px, 0px) rotate(0deg)";
 			});
@@ -258,10 +361,12 @@ function getImageUrl(record: any): string {
 			}, 360);
 		} else {
 			errors += 1;
-			errorsNode.textContent = errors;
+			errorsNode.textContent = errors.toString();
 			feedback.textContent = "✗ Incorrect !";
-			feedback.className = "w-full max-w-sm min-h-14 rounded-2xl flex items-center justify-center font-semibold text-base opacity-100 transition-opacity bg-red-100 text-red-700";
-			successFlash.className = "pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-red-500/30 text-white opacity-100 transition-all duration-200";
+			feedback.className =
+				"w-full max-w-sm min-h-14 rounded-2xl flex items-center justify-center font-semibold text-base opacity-100 transition-opacity bg-red-100 text-red-700";
+			successFlash.className =
+				"pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-red-500/30 text-white opacity-100 transition-all duration-200";
 			successText.textContent = "Incorrect !";
 		}
 
@@ -275,51 +380,51 @@ function getImageUrl(record: any): string {
 		}, RESET_DELAY);
 	}
 
-	swipeCard.addEventListener("pointerdown", (event) => {
-		if (answered) return;
+	if (swipeCard) {
+		swipeCard.addEventListener("pointerdown", (event: PointerEvent) => {
+			if (answered) return;
+			pointerActive = true;
+			pointerId = event.pointerId;
+			startX = event.clientX;
+			startY = event.clientY;
+			deltaX = 0;
+			deltaY = 0;
+			swipeCard.setPointerCapture(pointerId);
+			swipeCard.style.transition = "none";
+		});
 
-		pointerActive = true;
-		pointerId = event.pointerId;
-		startX = event.clientX;
-		startY = event.clientY;
-		deltaX = 0;
-		deltaY = 0;
+		swipeCard.addEventListener("pointermove", (event: PointerEvent) => {
+			if (!pointerActive || event.pointerId !== pointerId || answered)
+				return;
+			deltaX = event.clientX - startX;
+			deltaY = event.clientY - startY;
+			setCardTransform(deltaX, deltaY);
+		});
 
-		swipeCard.setPointerCapture(pointerId);
-		swipeCard.style.transition = "none";
-	});
+		function endPointer(event: PointerEvent) {
+			if (!pointerActive || event.pointerId !== pointerId) return;
+			pointerActive = false;
 
-	swipeCard.addEventListener("pointermove", (event) => {
-		if (!pointerActive || event.pointerId !== pointerId || answered) return;
+			try {
+				if (swipeCard) swipeCard.releasePointerCapture(pointerId);
+			} catch (error) {}
 
-		deltaX = event.clientX - startX;
-		deltaY = event.clientY - startY;
-		setCardTransform(deltaX, deltaY);
-	});
+			if (answered) return;
 
-	function endPointer(event) {
-		if (!pointerActive || event.pointerId !== pointerId) return;
+			if (Math.abs(deltaX) >= SWIPE_THRESHOLD) {
+				finishQuestion(deltaX > 0 ? "right" : "left");
+				return;
+			}
 
-		pointerActive = false;
-
-		try {
-			swipeCard.releasePointerCapture(pointerId);
-		} catch (error) {
-			// Ignore if capture was already released.
+			resetCard();
 		}
 
-		if (answered) return;
-
-		if (Math.abs(deltaX) >= SWIPE_THRESHOLD) {
-			finishQuestion(deltaX > 0 ? "right" : "left");
-			return;
-		}
-
-		resetCard();
+		swipeCard.addEventListener("pointerup", endPointer as EventListener);
+		swipeCard.addEventListener(
+			"pointercancel",
+			endPointer as EventListener,
+		);
 	}
-
-	swipeCard.addEventListener("pointerup", endPointer);
-	swipeCard.addEventListener("pointercancel", endPointer);
 
 	initGame();
 </script>

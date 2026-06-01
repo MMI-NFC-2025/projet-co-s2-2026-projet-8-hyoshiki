@@ -6,7 +6,6 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import { pb } from "../lib/pocketbase";
 
-// Récupérer tous les signes depuis PocketBase
 let signes: any[] = [];
 try {
     signes = await pb.collection("signes").getFullList(200);
@@ -29,7 +28,11 @@ function getImageUrl(record: any): string {
     <div class="bg-white min-h-screen flex flex-col">
         <Header />
 
-        <main class="flex-1 mx-auto max-w-2xl w-full px-3 py-4 pt-24">
+        <main
+            id="quiz-main"
+            data-signes={JSON.stringify(signes)}
+            class="flex-1 mx-auto max-w-2xl w-full px-3 py-4 pt-24"
+        >
             <div class="mb-3">
                 <a
                     href="/arcade"
@@ -56,7 +59,6 @@ function getImageUrl(record: any): string {
             </div>
 
             <div class="flex flex-col items-center gap-3">
-                <!-- Signe à deviner -->
                 <div
                     class="w-full max-w-xs bg-white rounded-2xl shadow-md p-4 flex items-center justify-center min-h-56"
                 >
@@ -68,7 +70,6 @@ function getImageUrl(record: any): string {
                     />
                 </div>
 
-                <!-- Score -->
                 <div class="flex gap-3 text-center">
                     <div
                         class="bg-blue-100 rounded-lg px-3 py-1.5 border-2 border-blue"
@@ -90,7 +91,6 @@ function getImageUrl(record: any): string {
                     </div>
                 </div>
 
-                <!-- Options de réponse -->
                 <div class="w-full max-w-xs grid grid-cols-2 gap-3">
                     <button
                         id="option1"
@@ -106,20 +106,11 @@ function getImageUrl(record: any): string {
                     </button>
                 </div>
 
-                <!-- Feedback -->
                 <div
                     id="feedback"
                     class="w-full max-w-xs h-12 rounded-xl flex items-center justify-center font-semibold text-base opacity-0 transition-opacity"
                 >
                 </div>
-
-                <!-- Bouton suivant -->
-                <button
-                    id="nextButton"
-                    class="hidden px-8 py-3 bg-blue text-white rounded-lg font-semibold hover:bg-blue/90 transition-colors"
-                >
-                    Question suivante
-                </button>
             </div>
         </main>
 
@@ -127,56 +118,63 @@ function getImageUrl(record: any): string {
     </div>
 </Layout>
 
-<script define:vars={{ signes }}>
-    let currentSigne = null;
-    let wrongSigne = null;
-    let correctOption = null;
+<script>
+    import { attribuerXP } from "../lib/xp";
+
+    const mainEl = document.getElementById("quiz-main");
+    const signes = mainEl ? JSON.parse(mainEl.dataset.signes || "[]") : [];
+
+    let currentSigne: any = null;
+    let wrongSigne: any = null;
+    let correctOption: number | null = null;
     let answered = false;
     let score = 0;
     let errors = 0;
-    let playedSigns = new Set(); // Tracker les signes déjà joués
+    let playedSigns = new Set();
 
-    // Fonction pour obtenir l'URL de l'image
-    function getImageUrl(record) {
+    function getImageUrl(record: any) {
         if (record.image) {
             return `https://odysigne.carnicer.fr/api/files/signes/${record.id}/${record.image}`;
         }
         return "";
     }
 
-    // Initialiser le jeu
-    function initGame() {
+    async function initGame() {
         if (signes.length < 2) {
             console.error("Pas assez de signes disponibles");
             return;
         }
 
-        // Vérifier s'il y a encore des signes non joués
         if (playedSigns.size >= signes.length) {
-            // Tous les signes ont été joués
-            document.querySelector("main").innerHTML = `
-                <div class="flex flex-col items-center justify-center h-screen gap-8">
-                    <h2 class="font-title text-3xl text-black text-center">Bravo ! 🎉</h2>
-                    <p class="text-xl text-gray-600 text-center">Vous avez révisé tous les signes !</p>
-                    <div class="flex gap-8 bg-white p-8 rounded-2xl shadow-md">
-                        <div class="text-center">
-                            <p class="text-sm text-gray-600">Bonnes réponses</p>
-                            <p class="text-4xl font-bold text-green-600">${score}</p>
+            // Fin du jeu : On calcule et attribue l'XP
+            const totalQuestions = score + errors;
+            const xpGagnee = await attribuerXP(score, totalQuestions);
+
+            if (mainEl) {
+                mainEl.innerHTML = `
+                    <div class="flex flex-col items-center justify-center min-h-[70vh] gap-8">
+                        <h2 class="font-title text-3xl text-black text-center">Bravo ! 🎉</h2>
+                        <p class="text-xl text-gray-600 text-center">Vous avez révisé tous les signes !</p>
+                        <p class="text-2xl text-blue font-bold text-center">✨ + ${xpGagnee} XP gagnés !</p>
+                        <div class="flex gap-8 bg-white p-8 rounded-2xl shadow-md border border-black/5">
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600">Bonnes réponses</p>
+                                <p class="text-4xl font-bold text-green-600">${score}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600">Erreurs</p>
+                                <p class="text-4xl font-bold text-red-600">${errors}</p>
+                            </div>
                         </div>
-                        <div class="text-center">
-                            <p class="text-sm text-gray-600">Erreurs</p>
-                            <p class="text-4xl font-bold text-red-600">${errors}</p>
-                        </div>
+                        <a href="/arcade" class="px-8 py-3 bg-blue text-white rounded-lg font-semibold hover:bg-blue/90 transition-colors">
+                            Retour à l'arcade
+                        </a>
                     </div>
-                    <a href="/arcade" class="px-8 py-3 bg-blue text-white rounded-lg font-semibold hover:bg-blue/90 transition-colors">
-                        Retour à l'arcade
-                    </a>
-                </div>
-            `;
+                `;
+            }
             return;
         }
 
-        // Sélectionner un signe aléatoire non encore joué
         let randomIndex;
         do {
             randomIndex = Math.floor(Math.random() * signes.length);
@@ -185,48 +183,51 @@ function getImageUrl(record: any): string {
         currentSigne = signes[randomIndex];
         playedSigns.add(currentSigne.id);
 
-        // Sélectionner une mauvaise réponse différente
         let randomIndexWrong;
         do {
             randomIndexWrong = Math.floor(Math.random() * signes.length);
         } while (signes[randomIndexWrong].id === currentSigne.id);
         wrongSigne = signes[randomIndexWrong];
 
-        // Afficher l'image du signe
         const imgUrl = getImageUrl(currentSigne);
-        if (imgUrl) {
-            document.getElementById("signImage").src = imgUrl;
-            document.getElementById("signImage").style.display = "block";
-        } else {
-            document.getElementById("signImage").style.display = "none";
+        const signImageEl = document.getElementById(
+            "signImage",
+        ) as HTMLImageElement;
+        if (signImageEl) {
+            if (imgUrl) {
+                signImageEl.src = imgUrl;
+                signImageEl.style.display = "block";
+            } else {
+                signImageEl.style.display = "none";
+            }
         }
 
-        // Créer les options
         const options = [
             { text: currentSigne.nom_signe, isCorrect: true },
             { text: wrongSigne.nom_signe, isCorrect: false },
         ];
 
-        // Mélanger les options
-        const randomOrder = Math.random() < 0.5;
-        if (randomOrder) {
+        if (Math.random() < 0.5) {
             options.reverse();
         }
 
-        // Déterminer quelle option est correcte après mélange
         correctOption = options.findIndex((opt) => opt.isCorrect);
 
-        // Afficher les options
-        document.getElementById("option1Text").textContent = options[0].text;
-        document.getElementById("option2Text").textContent = options[1].text;
+        const op1El = document.getElementById("option1Text");
+        const op2El = document.getElementById("option2Text");
+        if (op1El) op1El.textContent = options[0].text;
+        if (op2El) op2El.textContent = options[1].text;
 
-        // Réinitialiser le state
         answered = false;
-        document.getElementById("feedback").textContent = "";
-        document.getElementById("feedback").className =
-            "w-full max-w-sm h-16 rounded-2xl flex items-center justify-center font-semibold text-lg opacity-0 transition-opacity";
+        const feedbackEl = document.getElementById("feedback");
+        if (feedbackEl) {
+            feedbackEl.textContent = "";
+            feedbackEl.className =
+                "w-full max-w-sm h-16 rounded-2xl flex items-center justify-center font-semibold text-lg opacity-0 transition-opacity";
+        }
+
         document.querySelectorAll(".quiz-option").forEach((btn) => {
-            btn.disabled = false;
+            (btn as HTMLButtonElement).disabled = false;
             btn.classList.remove(
                 "bg-green-100",
                 "bg-red-100",
@@ -236,56 +237,59 @@ function getImageUrl(record: any): string {
         });
     }
 
-    // Gérer la réponse
-    function handleAnswer(optionIndex) {
+    function handleAnswer(optionIndex: number) {
         if (answered) return;
 
         answered = true;
         const isCorrect = optionIndex === correctOption;
 
+        const scoreEl = document.getElementById("score");
+        const errorsEl = document.getElementById("errors");
+        const feedbackEl = document.getElementById("feedback");
+
         if (isCorrect) {
             score++;
-            document.getElementById("score").textContent = score;
-            document.getElementById("feedback").textContent = "✓ Correct !";
-            document.getElementById("feedback").className =
-                "w-full max-w-sm h-16 rounded-2xl flex items-center justify-center font-semibold text-lg opacity-100 transition-opacity bg-green-100 text-green-600";
+            if (scoreEl) scoreEl.textContent = score.toString();
+            if (feedbackEl) {
+                feedbackEl.textContent = "✓ Correct !";
+                feedbackEl.className =
+                    "w-full max-w-sm h-16 rounded-2xl flex items-center justify-center font-semibold text-lg opacity-100 transition-opacity bg-green-100 text-green-600";
+            }
             document
                 .getElementById(`option${optionIndex + 1}`)
-                .classList.add("bg-green-100", "border-green-500");
+                ?.classList.add("bg-green-100", "border-green-500");
         } else {
             errors++;
-            document.getElementById("errors").textContent = errors;
-            document.getElementById("feedback").textContent = "✗ Incorrect !";
-            document.getElementById("feedback").className =
-                "w-full max-w-sm h-16 rounded-2xl flex items-center justify-center font-semibold text-lg opacity-100 transition-opacity bg-red-100 text-red-600";
+            if (errorsEl) errorsEl.textContent = errors.toString();
+            if (feedbackEl) {
+                feedbackEl.textContent = "✗ Incorrect !";
+                feedbackEl.className =
+                    "w-full max-w-sm h-16 rounded-2xl flex items-center justify-center font-semibold text-lg opacity-100 transition-opacity bg-red-100 text-red-600";
+            }
             document
                 .getElementById(`option${optionIndex + 1}`)
-                .classList.add("bg-red-100", "border-red-500");
+                ?.classList.add("bg-red-100", "border-red-500");
             document
-                .getElementById(`option${correctOption + 1}`)
-                .classList.add("bg-green-100", "border-green-500");
+                .getElementById(`option${(correctOption || 0) + 1}`)
+                ?.classList.add("bg-green-100", "border-green-500");
         }
 
-        // Désactiver tous les boutons
         document.querySelectorAll(".quiz-option").forEach((btn) => {
-            btn.disabled = true;
+            (btn as HTMLButtonElement).disabled = true;
         });
 
-        // Passer à la prochaine question automatiquement après 2 secondes
         setTimeout(() => {
             initGame();
         }, 2000);
     }
 
-    // Event listeners pour les options
     document
         .getElementById("option1")
-        .addEventListener("click", () => handleAnswer(0));
+        ?.addEventListener("click", () => handleAnswer(0));
     document
         .getElementById("option2")
-        .addEventListener("click", () => handleAnswer(1));
+        ?.addEventListener("click", () => handleAnswer(1));
 
-    // Initialiser le jeu au chargement
     initGame();
 </script>
 
