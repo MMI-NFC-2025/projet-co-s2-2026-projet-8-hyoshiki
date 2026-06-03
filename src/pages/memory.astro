@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import { pb } from "../lib/pocketbase";
@@ -11,49 +13,34 @@ try {
   console.error("Erreur lors de la récupération des signes:", error);
 }
 
-// Mots-clés pour identifier les signes d'émotions (basés sur les signes existants)
+// Mots-clés pour identifier les signes d'émotions
 const emotionKeywords = [
-  "peur",
-  "joyeux",
-  "espoir",
-  "colère",
-  "bonjour",
-  "au revoir",
-  "dormir",
-  "à bientôt",
+  "peur", "joyeux", "espoir", "colère", 
+  "bonjour", "au revoir", "dormir", "à bientôt",
 ];
 
-// Filtrer pour garder uniquement les signes d'émotions
 const emotionSigns = signes.filter((signe) => {
   const nomLower = signe.nom_signe?.toLowerCase() || "";
   return emotionKeywords.some((keyword) => nomLower.includes(keyword));
 });
 
-// Prendre les 8 premiers signes d'émotions et créer les paires image-texte
+
 const selectedSignes = emotionSigns.slice(0, 8);
 const pairs: any[] = [];
 
-// Pour chaque signe, créer une carte image et une carte texte
 selectedSignes.forEach((signe) => {
-  pairs.push({
-    ...signe,
-    type: "image",
-  });
-  pairs.push({
-    ...signe,
-    type: "text",
-  });
+  pairs.push({ ...signe, type: "image" });
+  pairs.push({ ...signe, type: "text" });
 });
 
-// Mélanger les paires
 pairs.sort(() => Math.random() - 0.5);
 
-// Fonction pour obtenir l'URL de l'image
+
+const BASE_URL = "https://odysigne.carnicer.fr";
 function getImageUrl(record: any): string {
-  if (record.image) {
-    return `https://odysigne.carnicer.fr/api/files/${record.collectionName || "signes"}/${record.id}/${record.image}`;
-  }
-  return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50" y="50" text-anchor="middle" dy=".3em">?</text></svg>';
+  return record.image 
+    ? `${BASE_URL}/api/files/${record.collectionId || record.collectionName || "signes"}/${record.id}/${record.image}` 
+    : 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50" y="50" text-anchor="middle" dy=".3em">?</text></svg>';
 }
 ---
 
@@ -63,82 +50,72 @@ function getImageUrl(record: any): string {
 >
   <div class="bg-white min-h-screen flex flex-col">
     <Header />
-    <main class="flex-1 mx-auto mt-6 max-w-4xl w-full px-4 py-8">
-      <div class="mb-6">
-        <a
-          href="/arcade"
-          class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-4"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"></path>
+    <main id="memory-main" class="flex-1 mx-auto mt-6 max-w-3xl w-full px-4 py-8 pt-12 md:pt-16">
+      
+      <!-- En-tête -->
+      <div class="mb-8">
+        <a href="/arcade" class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-2 text-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
           Retour
         </a>
         <h1 class="font-title text-3xl text-black">Mémory</h1>
-        <p class="text-gray-600 mt-2">Trouvez les paires de signes</p>
+        <p class="text-gray-600 mt-2">Trouvez les paires de signes !</p>
       </div>
 
-      <div class="mb-6 text-center">
-        <div class="flex justify-center gap-8 items-center">
-          <div>
-            <p class="text-sm text-gray-600">Paires trouvées</p>
-            <p class="text-3xl font-semibold"><span id="found">0</span>/8</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-600">Temps restant</p>
-            <p class="text-3xl font-semibold"><span id="timer">120</span>s</p>
-          </div>
+    
+      <div class="mb-8 flex justify-center gap-6 text-center">
+        <div class="bg-blue/10 rounded-xl px-6 py-2 border-2 border-blue">
+          <p class="text-xs text-blue font-semibold uppercase tracking-wider">Paires trouvées</p>
+          <p class="text-2xl font-bold text-blue" aria-live="polite"><span id="found">0</span>/8</p>
+        </div>
+        <div class="bg-orange-50 rounded-xl px-6 py-2 border-2 border-orange-400">
+          <p class="text-xs text-orange-500 font-semibold uppercase tracking-wider">Temps restant</p>
+          <p class="text-2xl font-bold text-orange-500" aria-live="polite"><span id="timer">120</span>s</p>
         </div>
       </div>
 
-      <div id="game-board" class="grid grid-cols-4 gap-4 mb-8">
-        {
-          pairs.map((signe, index) => (
-            <div
-              class="memory-card bg-cyan-300 rounded-lg h-40 cursor-pointer flex items-center justify-center overflow-hidden transition-all hover:shadow-lg"
-              data-index={index}
-              data-sign-id={signe.id}
-              data-sign-name={signe.nom_signe}
-              data-type={signe.type}
-              data-image={getImageUrl(signe)}
-            >
-              <div class="sign-back w-full h-full flex items-center justify-center bg-cyan-400 text-5xl font-bold">
-                ?
-              </div>
+    
+    
+      <div id="game-board" class="grid grid-cols-4 gap-3 sm:gap-4 mb-8">
+        {pairs.map((signe, index) => (
+          <button
+            type="button"
+            class="memory-card relative bg-cyan-300 rounded-xl h-24 sm:h-32 md:h-40 cursor-pointer overflow-hidden transition-all duration-200 hover:scale-[1.02] active:scale-95 hover:shadow-md"
+            data-index={index}
+            data-id={signe.id}
+            aria-label="Carte de mémory"
+          >
+    
+            <div class="sign-back absolute inset-0 flex items-center justify-center bg-cyan-400 text-4xl md:text-5xl font-bold text-white transition-opacity">
+              ?
+            </div>
+            
+    
+            <div class="sign-front absolute inset-0 hidden items-center justify-center bg-white p-2 transition-opacity">
               {signe.type === "image" ? (
-                <div
-                  class="sign-image w-full h-full bg-white p-2 items-center justify-center"
-                  style="display: none;"
-                >
-                  <img
-                    class="max-w-full max-h-full object-contain"
-                    alt={signe.nom_signe}
-                  />
-                </div>
-              ) : (
-                <div
-                  class="sign-text w-full h-full bg-white p-2 items-center justify-center text-2xl font-semibold text-black text-center"
-                  style="display: none;"
+                <img
+                  src={getImageUrl(signe)}
+                  class="max-w-full max-h-full object-contain"
+                  alt={`Illustration de ${signe.nom_signe}`}
+                  loading="lazy"
                 />
+              ) : (
+                <span class="text-sm sm:text-lg md:text-xl font-semibold text-black text-center leading-tight">
+                  {signe.nom_signe}
+                </span>
               )}
             </div>
-          ))
-        }
+          </button>
+        ))}
       </div>
 
+    
       <div class="text-center">
         <button
           id="reset-btn"
-          class="bg-blue text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue/90 transition-colors"
+          class="bg-blue text-white px-8 py-3 rounded-2xl font-bold uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 transition-all"
         >
           Recommencer
         </button>
@@ -150,213 +127,162 @@ function getImageUrl(record: any): string {
 <script>
   import { attribuerXP } from "../lib/xp.ts";
 
-  let flipped: string[] = [];
-  let matched: string[] = [];
-  let timeLeft = 120;
-  let timerInterval: number | null = null;
-  let gameOver = false;
-  let isChecking = false;
+  document.addEventListener("DOMContentLoaded", () => {
+    const mainEl = document.getElementById("memory-main");
+    const cardsContainer = document.getElementById("game-board");
+    const foundCount = document.getElementById("found");
+    const timerDisplay = document.getElementById("timer");
+    const resetBtn = document.getElementById("reset-btn");
 
-  const cardsContainer = document.getElementById("game-board");
-  const foundCount = document.getElementById("found");
-  const timerDisplay = document.getElementById("timer");
-  const resetBtn = document.getElementById("reset-btn");
+    if (!mainEl || !cardsContainer || !foundCount || !timerDisplay) return;
 
-  function shuffleCards() {
-    const cards = Array.from(document.querySelectorAll(".memory-card"));
+    let flipped: HTMLElement[] = [];
+    let matched: string[] = [];
+    let timeLeft = 120;
+    let timerInterval: number | null = null;
+    let gameOver = false;
+    let isChecking = false;
+    const TOTAL_PAIRS = 8;
 
-    for (let i = cards.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const temp = cards[i];
-      cards[i] = cards[j];
-      cards[j] = temp;
+    
+    function shuffleCards() {
+      const cards = Array.from(document.querySelectorAll(".memory-card")) as HTMLElement[];
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+      cards.forEach((card, index) => {
+        card.setAttribute("data-index", index.toString());
+        cardsContainer?.appendChild(card);
+      });
     }
 
-    cards.forEach((card, index) => {
-      card.setAttribute("data-index", index.toString());
-      cardsContainer?.appendChild(card);
-    });
-  }
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = window.setInterval(() => {
+        timeLeft--;
+        timerDisplay!.textContent = timeLeft.toString();
 
-  function setupCards() {
-    const cards = document.querySelectorAll(".memory-card");
-    cards.forEach((card) => {
-      const cardType = card.getAttribute("data-type");
-      const imageUrl = card.getAttribute("data-image");
-      const signName = card.getAttribute("data-sign-name");
-
-      if (cardType === "image") {
-        const imgElement = card.querySelector(
-          ".sign-image img",
-        ) as HTMLImageElement;
-        if (imgElement) {
-          imgElement.src = imageUrl || "";
+        if (timeLeft <= 0) {
+          endGame(false);
         }
-      } else if (cardType === "text") {
-        const textElement = card.querySelector(".sign-text") as HTMLElement;
-        if (textElement && signName) {
-          textElement.textContent = signName;
-        }
-      }
-    });
-  }
-
-  function startTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-    timerInterval = window.setInterval(() => {
-      timeLeft--;
-      timerDisplay!.textContent = timeLeft.toString();
-
-      if (timeLeft <= 0) {
-        endGame(false);
-      }
-    }, 1000);
-  }
-
-  function flipCard(card: Element) {
-    if (gameOver || isChecking) return;
-
-    const index = card.getAttribute("data-index");
-    if (matched.includes(index!) || flipped.includes(index!)) {
-      return;
-    }
-
-    card.classList.add("flipped");
-    const signBack = card.querySelector(".sign-back") as HTMLElement;
-    const cardType = card.getAttribute("data-type");
-
-    if (signBack) signBack.classList.add("hidden");
-
-    if (cardType === "image") {
-      const signImage = card.querySelector(".sign-image") as HTMLElement;
-      if (signImage) signImage.classList.remove("hidden");
-    } else {
-      const signText = card.querySelector(".sign-text") as HTMLElement;
-      if (signText) signText.classList.remove("hidden");
-    }
-
-    flipped.push(index!);
-
-    if (flipped.length === 2) {
-      isChecking = true;
-      checkMatch();
-    }
-  }
-
-  function checkMatch() {
-    const card1Index = flipped[0];
-    const card2Index = flipped[1];
-    const card1 = document.querySelector(`[data-index="${card1Index}"]`);
-    const card2 = document.querySelector(`[data-index="${card2Index}"]`);
-
-    const id1 = card1?.getAttribute("data-sign-id");
-    const id2 = card2?.getAttribute("data-sign-id");
-    const match = id1 === id2;
-
-    if (match) {
-      matched.push(card1Index, card2Index);
-      if (card1) card1.classList.add("matched");
-      if (card2) card2.classList.add("matched");
-      foundCount!.textContent = (matched.length / 2).toString();
-
-      isChecking = false;
-
-      if (matched.length === document.querySelectorAll(".memory-card").length) {
-        endGame(true);
-      }
-    } else {
-      setTimeout(() => {
-        const signBack1 = card1?.querySelector(".sign-back") as HTMLElement;
-        const signImage1 = card1?.querySelector(".sign-image") as HTMLElement;
-        const signText1 = card1?.querySelector(".sign-text") as HTMLElement;
-        const signBack2 = card2?.querySelector(".sign-back") as HTMLElement;
-        const signImage2 = card2?.querySelector(".sign-image") as HTMLElement;
-        const signText2 = card2?.querySelector(".sign-text") as HTMLElement;
-
-        if (card1) card1.classList.remove("flipped");
-        if (card2) card2.classList.remove("flipped");
-        if (signBack1) signBack1.classList.remove("hidden");
-        if (signImage1) signImage1.classList.add("hidden");
-        if (signText1) signText1.classList.add("hidden");
-        if (signBack2) signBack2.classList.remove("hidden");
-        if (signImage2) signImage2.classList.add("hidden");
-        if (signText2) signText2.classList.add("hidden");
-
-        isChecking = false;
       }, 1000);
     }
 
-    flipped = [];
-  }
+    function flipCard(card: HTMLElement) {
+      if (gameOver || isChecking || card.classList.contains("matched") || flipped.includes(card)) return;
 
-  async function endGame(won: boolean) {
-    gameOver = true;
-    if (timerInterval) clearInterval(timerInterval);
+      
+      const signBack = card.querySelector(".sign-back");
+      const signFront = card.querySelector(".sign-front");
+      
+      signBack?.classList.add("hidden");
+      signFront?.classList.remove("hidden");
+      signFront?.classList.add("flex");
+      
+      card.classList.add("flipped");
+      flipped.push(card);
 
-    // Attribution de l'XP : 1 paire = 1 point, max 8
-    const pairesTrouvees = matched.length / 2;
-    const totalPaires = 8;
-    const xpGagnee = await attribuerXP(pairesTrouvees, totalPaires);
-
-    if (!won) {
-      resetGame();
+      if (flipped.length === 2) {
+        isChecking = true;
+        checkMatch();
+      }
     }
-  }
 
-  function resetGame() {
-    flipped = [];
-    matched = [];
-    timeLeft = 120;
-    gameOver = false;
-    isChecking = false;
-    foundCount!.textContent = "0";
-    timerDisplay!.textContent = "120";
+    function checkMatch() {
+      const card1 = flipped[0];
+      const card2 = flipped[1];
+      const id1 = card1.getAttribute("data-id");
+      const id2 = card2.getAttribute("data-id");
 
-    const cards = document.querySelectorAll(".memory-card");
+      if (id1 === id2) {
+        // Bonne paire
+        matched.push(id1!);
+        card1.classList.add("matched", "cursor-not-allowed", "opacity-80");
+        card2.classList.add("matched", "cursor-not-allowed", "opacity-80");
+        
+        foundCount!.textContent = matched.length.toString();
+        isChecking = false;
+        flipped = [];
+
+        if (matched.length === TOTAL_PAIRS) {
+          endGame(true);
+        }
+      } else {
+        // Mauvaise paire
+        setTimeout(() => {
+          [card1, card2].forEach(card => {
+            card.classList.remove("flipped");
+            const back = card.querySelector(".sign-back");
+            const front = card.querySelector(".sign-front");
+            back?.classList.remove("hidden");
+            front?.classList.add("hidden");
+            front?.classList.remove("flex");
+          });
+          flipped = [];
+          isChecking = false;
+        }, 1000);
+      }
+    }
+
+    async function endGame(won: boolean) {
+      if (!mainEl) return;
+      
+      gameOver = true;
+      if (timerInterval) clearInterval(timerInterval);
+
+      if (won) {
+        const xpGagnee = await attribuerXP(matched.length, TOTAL_PAIRS);
+        
+        mainEl.innerHTML = `
+          <div class="flex flex-col items-center justify-center min-h-[60vh] gap-8 text-center px-4 animate-fade-in">
+            <h2 class="font-title text-4xl text-black">Félicitations !</h2>
+            <p class="text-xl text-gray-600">Vous avez trouvé toutes les paires !</p>
+            <div class="bg-blue/10 px-8 py-4 rounded-2xl border border-blue/20">
+              <p class="text-4xl text-blue font-bold"> + ${xpGagnee} XP</p>
+            </div>
+            <a href="/arcade" class="mt-4 px-8 py-4 bg-blue text-white rounded-2xl font-bold uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all">
+              Retour à l'arcade
+            </a>
+          </div>
+        `;
+      } else {
+        // Défaite au temps
+        alert("Temps écoulé ! Essayez encore !");
+        resetGame();
+      }
+    }
+
+    function resetGame() {
+      flipped = [];
+      matched = [];
+      timeLeft = 120;
+      gameOver = false;
+      isChecking = false;
+      
+      foundCount!.textContent = "0";
+      timerDisplay!.textContent = "120";
+
+      const cards = document.querySelectorAll(".memory-card") as NodeListOf<HTMLElement>;
+      cards.forEach((card) => {
+        card.classList.remove("flipped", "matched", "cursor-not-allowed", "opacity-80");
+        const back = card.querySelector(".sign-back");
+        const front = card.querySelector(".sign-front");
+        back?.classList.remove("hidden");
+        front?.classList.add("hidden");
+        front?.classList.remove("flex");
+      });
+
+      shuffleCards();
+      startTimer();
+    }
+
+    const cards = document.querySelectorAll(".memory-card") as NodeListOf<HTMLElement>;
     cards.forEach((card) => {
-      card.classList.remove("flipped", "matched");
-      const signBack = card.querySelector(".sign-back") as HTMLElement;
-      const signImage = card.querySelector(".sign-image") as HTMLElement;
-      if (signBack) signBack.classList.remove("hidden");
-      if (signImage) signImage.classList.add("hidden");
+      card.addEventListener("click", () => flipCard(card));
     });
 
-    shuffleCards();
+    resetBtn?.addEventListener("click", resetGame);
     startTimer();
-  }
-
-  setupCards();
-  shuffleCards();
-
-  const cards = document.querySelectorAll(".memory-card");
-  cards.forEach((card) => {
-    card.addEventListener("click", () => flipCard(card));
   });
-
-  resetBtn?.addEventListener("click", resetGame);
-
-  startTimer();
 </script>
-
-<style>
-  .memory-card.flipped .sign-back {
-    display: none !important;
-  }
-
-  .memory-card.flipped .sign-image {
-    display: flex !important;
-  }
-
-  .memory-card.flipped .sign-text {
-    display: flex !important;
-  }
-
-  .memory-card.matched {
-    opacity: 1;
-    cursor: not-allowed;
-  }
-
-  .sign-image {
-    background-color: white;
-  }
-</style>

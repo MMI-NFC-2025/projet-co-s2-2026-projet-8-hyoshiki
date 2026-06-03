@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
-import FooterPromo from "../components/Footer.astro";
+import Footer from "../components/Footer.astro"; 
 
 import logo from "../assets/img/logo.svg";
 ---
@@ -10,140 +10,192 @@ import logo from "../assets/img/logo.svg";
 	title="Odysignes - Contact"
 	description="Contactez l'équipe Odysignes pour toute question ou demande."
 >
-	<div class="bg-white">
+	<div class="bg-white min-h-screen flex flex-col">
 		<Header logoSrc={logo.src} />
 
-		<main class="mx-auto mt-6 mb-8 max-w-6xl px-4 pb-16 pt-8 sm:px-6">
-			<section class="text-center">
+		<!-- Ajout de flex-1 et w-full -->
+		<main
+			class="flex-1 mx-auto mt-6 mb-8 max-w-6xl w-full px-4 pb-16 pt-8 sm:px-6"
+		>
+			<!-- En-tête -->
+			<section class="text-center mb-12">
 				<h1
-					class="font-title text-4xl leading-none text-black sm:text-5xl"
+					class="font-title text-4xl leading-none text-black sm:text-5xl uppercase"
 				>
-					UNE QUESTION ?
+					Une question ?
 				</h1>
 				<p
-					class="mt-2 font-title text-2xl tracking-tight text-black/95 sm:text-3xl"
+					class="mt-2 font-title text-2xl tracking-tight text-black/95 sm:text-3xl uppercase"
 				>
-					CONTACTEZ-NOUS
+					Contactez-nous
 				</p>
 			</section>
 
-			<section class="mt-8">
-				<form class="space-y-5">
-					<div>
-						<p class="mb-2 text-xl text-black">
-							1. Votre nom complet
-						</p>
-						<div class="grid gap-4 sm:grid-cols-2">
-							<input
-								type="text"
-								name="nom"
-								placeholder="Nom"
-								class="h-11 w-full rounded-2xl border-0 bg-blue px-4 text-white placeholder:text-white/70 shadow-soft outline-none ring-0 transition focus:opacity-95"
-							/>
-							<input
-								type="text"
-								name="prenom"
-								placeholder="Prenom"
-								class="h-11 w-full rounded-2xl border-0 bg-blue px-4 text-white placeholder:text-white/70 shadow-soft outline-none ring-0 transition focus:opacity-95"
-							/>
+			<!-- Formulaire et Coordonnées en grille sur grand écran -->
+			<div class="grid gap-12 lg:grid-cols-2 lg:gap-8 items-start">
+				<!-- Section Formulaire -->
+				<section>
+					<form class="space-y-6">
+						<!-- Nom complet -->
+						<div>
+							<label
+								class="block mb-2 text-xl text-black font-medium"
+							>
+								1. Votre nom complet
+							</label>
+							<div class="grid gap-4 sm:grid-cols-2">
+								<input
+									type="text"
+									name="nom"
+									placeholder="Nom"
+									required
+									class="h-11 w-full rounded-2xl border-0 bg-blue px-4 text-white placeholder:text-white/70 shadow-soft outline-none transition focus:ring-2 focus:ring-indigo-300"
+								/>
+								<input
+									type="text"
+									name="prenom"
+									placeholder="Prénom"
+									required
+									class="h-11 w-full rounded-2xl border-0 bg-blue px-4 text-white placeholder:text-white/70 shadow-soft outline-none transition focus:ring-2 focus:ring-indigo-300"
+								/>
+							</div>
 						</div>
-					</div>
 
-					<div>
-						<p class="mb-2 text-xl text-black">2. Adresse mail</p>
+						<!-- Email -->
+						<div>
+							<label
+								for="email"
+								class="block mb-2 text-xl text-black font-medium"
+							>
+								2. Adresse mail
+							</label>
+							<div
+								class="flex items-center rounded-2xl bg-blue px-4 shadow-soft focus-within:ring-2 focus-within:ring-indigo-300 transition"
+							>
+								<span
+									class="text-2xl text-white"
+									aria-hidden="true">✉</span
+								>
+								<input
+									type="email"
+									id="email"
+									name="email"
+									placeholder="Adresse mail"
+									required
+									class="h-11 w-full border-0 bg-transparent pl-3 text-white placeholder:text-white/70 outline-none ring-0"
+								/>
+							</div>
+						</div>
+
+						<!-- Téléphone -->
+						<div>
+							<label
+								for="telephone"
+								class="block mb-2 text-xl text-black font-medium"
+							>
+								3. Numéro de téléphone
+							</label>
+							<div
+								class="flex items-center rounded-2xl bg-blue px-4 shadow-soft focus-within:ring-2 focus-within:ring-indigo-300 transition"
+							>
+								<span
+									class="text-2xl text-white"
+									aria-hidden="true">☎</span
+								>
+								<input
+									type="tel"
+									id="telephone"
+									name="telephone"
+									placeholder="Numéro de téléphone"
+									class="h-11 w-full border-0 bg-transparent pl-3 text-white placeholder:text-white/70 outline-none ring-0"
+								/>
+							</div>
+						</div>
+
+						<!-- Message -->
+						<div>
+							<label for="message" class="sr-only"
+								>Votre message</label
+							>
+							<textarea
+								id="message"
+								name="message"
+								rows="5"
+								required
+								placeholder="Votre message..."
+								class="min-h-[10rem] w-full rounded-2xl border-0 bg-blue px-4 py-4 text-white placeholder:text-white/70 shadow-soft outline-none transition focus:ring-2 focus:ring-indigo-300 resize-y"
+							></textarea>
+						</div>
+
+						<!-- Bouton -->
+						<div class="flex justify-center lg:justify-start">
+							<button
+								type="submit"
+								class="rounded-2xl bg-blue px-8 py-3 font-title text-xl text-white shadow-soft transition-all hover:opacity-90 hover:scale-105 active:scale-95"
+							>
+								Envoyer
+							</button>
+						</div>
+					</form>
+				</section>
+
+				<!-- Ligne de séparation visible uniquement sur mobile -->
+				<hr class="border-black/10 lg:hidden" />
+
+				<!-- Section Coordonnées -->
+				<section class="lg:sticky lg:top-8">
+					<h2
+						class="font-title text-3xl leading-none text-black sm:text-4xl mb-6 text-center lg:text-left"
+					>
+						Coordonnées
+					</h2>
+
+					<div
+						class="rounded-3xl bg-white p-6 shadow-soft border border-black/5"
+					>
 						<div
-							class="flex items-center rounded-2xl bg-blue px-4 shadow-soft"
+							class="space-y-6 text-base text-black/80 sm:text-lg"
 						>
-							<span class="text-2xl text-white" aria-hidden="true"
-								>✉</span
-							>
-							<input
-								type="email"
-								name="email"
-								placeholder="Adresse mail"
-								class="h-11 w-full border-0 bg-transparent pl-3 text-white placeholder:text-white/70 outline-none ring-0"
-							/>
+							<div class="flex items-start gap-4">
+								<span
+									class="text-2xl leading-none text-blue"
+									aria-hidden="true">✉</span
+								>
+								<a
+									href="mailto:odysigne@gmail.com"
+									class="hover:text-blue transition-colors"
+								>
+									odysigne@gmail.com
+								</a>
+							</div>
+							<div class="flex items-start gap-4">
+								<span
+									class="text-2xl leading-none text-blue"
+									aria-hidden="true">☎</span
+								>
+								<a
+									href="tel:+33684951536"
+									class="hover:text-blue transition-colors"
+								>
+									+33 6 84 95 15 36
+								</a>
+							</div>
+							<div class="flex items-start gap-4">
+								<span
+									class="text-2xl leading-none text-blue"
+									aria-hidden="true">📍</span
+								>
+								<p>
+									4 Pl. Lucien Tharradin<br />25200
+									Montbéliard
+								</p>
+							</div>
 						</div>
 					</div>
-
-					<div>
-						<p class="mb-2 text-xl text-black">
-							3. Numéro de téléphone
-						</p>
-						<div
-							class="flex items-center rounded-2xl bg-blue px-4 shadow-soft"
-						>
-							<span class="text-2xl text-white" aria-hidden="true"
-								>☎</span
-							>
-							<input
-								type="tel"
-								name="telephone"
-								placeholder="Numéro de téléphone"
-								class="h-11 w-full border-0 bg-transparent pl-3 text-white placeholder:text-white/70 outline-none ring-0"
-							/>
-						</div>
-					</div>
-
-					<div>
-						<textarea
-							name="message"
-							rows="5"
-							placeholder="Votre message"
-							class="min-h-40 w-full rounded-2xl border-0 bg-blue px-4 py-4 text-white placeholder:text-white/70 shadow-soft outline-none ring-0 transition focus:opacity-95"
-						></textarea>
-					</div>
-
-					<div class="flex justify-center">
-						<button
-							type="submit"
-							class="rounded-2xl bg-blue px-4 py-2 font-title text-xl text-white shadow-soft transition hover:opacity-95"
-						>
-							Soumettre
-						</button>
-					</div>
-				</form>
-			</section>
-
-			<hr class="my-10 border-black/80" />
-
-			<section>
-				<h2
-					class="font-title text-4xl leading-none text-black sm:text-5xl"
-				>
-					COORDONNÉES
-				</h2>
-
-				<div
-					class="mt-8 rounded-[1.8rem] bg-white p-5 shadow-soft ring-1 ring-black/5"
-				>
-					<div class="space-y-6 text-base text-black sm:text-lg">
-						<div class="flex items-start gap-3">
-							<span
-								class="text-2xl leading-none"
-								aria-hidden="true">✉</span
-							>
-							<p>odysigne@gmail.com</p>
-						</div>
-						<div class="flex items-start gap-3">
-							<span
-								class="text-2xl leading-none"
-								aria-hidden="true">☎</span
-							>
-							<p>+33 6 84 95 15 36</p>
-						</div>
-						<div class="flex items-start gap-3">
-							<span
-								class="text-2xl leading-none"
-								aria-hidden="true">📍</span
-							>
-							<p>4 Pl. Lucien Tharradin, 25200 Montbéliard</p>
-						</div>
-					</div>
-				</div>
-			</section>
+				</section>
+			</div>
 		</main>
 
-		<FooterPromo logoSrc={logo.src} />
+		<Footer logoSrc={logo.src} />
 	</div>
 </Layout>

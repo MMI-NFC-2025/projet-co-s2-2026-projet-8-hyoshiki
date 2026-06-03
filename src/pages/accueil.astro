@@ -37,26 +37,31 @@ const lessons = [
     },
 ];
 
+
 const modes = [
     {
         icon: modeLessonsIcon,
         title: "Leçons",
         subtitle: "Apprenez par catégories",
+        href: "/lecons",
     },
     {
         icon: modeStoriesIcon,
         title: "Aventures illustrées",
         subtitle: "Une nouvelle histoire ?",
+        href: "/aventure",
     },
     {
         icon: modeArcadeIcon,
         title: "Arcade et défis",
         subtitle: "Donnez le meilleur !",
+        href: "/arcade",
     },
     {
         icon: modeDictionaryIcon,
         title: "Dictionnaire LSF",
         subtitle: "Révisez vos signes",
+        href: "/dictionnaire",
     },
 ];
 ---
@@ -69,6 +74,7 @@ const modes = [
         <Header />
 
         <main class="flex-1 mx-auto max-w-6xl w-full px-4 py-8 sm:px-6">
+            <!-- Section Accueil & Série -->
             <section class="mb-8">
                 <h1 class="font-title text-2xl text-black mb-4 mt-4">
                     Bonjour <span id="user-name-display" class="text-blue"
@@ -106,11 +112,7 @@ const modes = [
                                     weekDays.map((day, index) => (
                                         <div class="flex flex-col items-center gap-1">
                                             <div
-                                                class={`w-8 h-8 rounded-lg font-bold text-xs flex items-center justify-center transition-colors ${
-                                                    completedDays[index]
-                                                        ? "bg-blue text-white"
-                                                        : "bg-gray-100 text-gray-400"
-                                                }`}
+                                                class={`w-8 h-8 rounded-lg font-bold text-xs flex items-center justify-center transition-colors ${completedDays[index] ? "bg-blue text-white" : "bg-gray-100 text-gray-400"}`}
                                             >
                                                 {completedDays[index]
                                                     ? "✓"
@@ -125,6 +127,7 @@ const modes = [
                 </div>
             </section>
 
+            <!-- Section Leçons en cours -->
             <section class="mb-8">
                 <h2 class="font-title text-2xl text-black mb-4">
                     Leçons en cours
@@ -161,6 +164,7 @@ const modes = [
                 </div>
             </section>
 
+            <!-- Section Modes d'apprentissage -->
             <section class="mb-8">
                 <h2 class="font-title text-2xl text-black mb-4">
                     Modes d'apprentissage
@@ -169,15 +173,7 @@ const modes = [
                     {
                         modes.map((mode) => (
                             <a
-                                href={
-                                    mode.title === "Arcade et défis"
-                                        ? "/arcade"
-                                        : mode.title === "Leçons"
-                                          ? "/lecons"
-                                          : mode.title === "Dictionnaire LSF"
-                                            ? "/dictionnaire"
-                                            : "#"
-                                }
+                                href={mode.href}
                                 class="flex min-h-[159px] items-center gap-4 rounded-2xl border border-black/5 bg-white px-4 py-6 shadow-soft transition-shadow hover:shadow-md"
                             >
                                 <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-white">
@@ -216,7 +212,7 @@ const modes = [
             </section>
         </main>
 
-        <Footer logoSrc={undefined} />
+        <Footer />
     </div>
 </Layout>
 
@@ -224,27 +220,27 @@ const modes = [
     import { pb } from "../lib/pocketbase.js";
     import { actualiserStreak } from "../lib/streak.ts";
 
-    // Ajout de async pour pouvoir attendre la mise à jour de la série
     document.addEventListener("DOMContentLoaded", async () => {
-        if (pb.authStore.isValid && pb.authStore.model) {
-            // 1. On lance la mise à jour en BDD en premier
+        // Return early si l'utilisateur n'est pas connecté pour éviter de lancer la suite inutilement
+        if (!pb.authStore.isValid || !pb.authStore.model) return;
+
+        try {
             await actualiserStreak();
 
-            // 2. On récupère les infos fraîches de l'utilisateur (mises à jour par actualiserStreak)
-            const user = pb.authStore.model as any;
-
-            // Pseudo
+            const user = pb.authStore.model;
             const nameElement = document.getElementById("user-name-display");
-            if (nameElement) {
+            const streakElement = document.getElementById("streak-count");
+
+            if (nameElement)
                 nameElement.textContent =
                     user.name || user.pseudo || "Utilisateur";
-            }
-
-            // Streak (Série en cours)
-            const streakElement = document.getElementById("streak-count");
-            if (streakElement) {
+            if (streakElement)
                 streakElement.textContent = user.serie_en_cours || "0";
-            }
+        } catch (error) {
+            console.error(
+                "Erreur lors de l'actualisation de la série :",
+                error,
+            );
         }
     });
 </script>
