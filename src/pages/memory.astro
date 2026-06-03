@@ -1,7 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
 import { pb } from "../lib/pocketbase";
 
 // Récupérer les signes depuis PocketBase
@@ -145,9 +144,6 @@ function getImageUrl(record: any): string {
         </button>
       </div>
     </main>
-    <div class="mt-8">
-      <Footer logoSrc={undefined} />
-    </div>
   </div>
 </Layout>
 
@@ -302,14 +298,7 @@ function getImageUrl(record: any): string {
     const totalPaires = 8;
     const xpGagnee = await attribuerXP(pairesTrouvees, totalPaires);
 
-    if (won) {
-      alert(
-        `🎉 Bravo! Tu as trouvé toutes les paires!\n✨ Tu as gagné + ${xpGagnee} XP !`,
-      );
-    } else {
-      alert(
-        `⏰ Temps écoulé! Tu as trouvé ${pairesTrouvees} paires.\n✨ Tu as gagné + ${xpGagnee} XP.\nRecommence le jeu.`,
-      );
+    if (!won) {
       resetGame();
     }
   }
