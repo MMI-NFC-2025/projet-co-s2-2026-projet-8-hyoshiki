@@ -5,18 +5,23 @@ import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import { pb } from "../lib/pocketbase";
 
+const BASE_URL = "https://odysigne.carnicer.fr";
+const FALLBACK_SVG =
+	'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50" y="50" text-anchor="middle" dy=".3em">?</text></svg>';
+
 let signes: any[] = [];
+
 try {
-	signes = await pb.collection("signes").getFullList(200);
+	const records = await pb.collection("signes").getFullList(200);
+
+	signes = records.map((record) => ({
+		...record,
+		imageUrl: record.image
+			? `${BASE_URL}/api/files/${record.collectionId || record.collectionName || "signes"}/${record.id}/${record.image}`
+			: FALLBACK_SVG,
+	}));
 } catch (error) {
 	console.error("Erreur lors de la récupération des signes:", error);
-}
-
-function getImageUrl(record: any): string {
-	if (record.image) {
-		return `https://odysigne.carnicer.fr/api/files/${record.collectionName || "signes"}/${record.id}/${record.image}`;
-	}
-	return "";
 }
 ---
 
@@ -30,18 +35,20 @@ function getImageUrl(record: any): string {
 		<main
 			id="puzzle-main"
 			data-signes={JSON.stringify(signes)}
-			class="flex-1 mx-auto max-w-3xl w-full px-3 py-3 pt-12 md:pt-14"
+			class="flex-1 mx-auto max-w-4xl w-full px-4 py-4 pt-12 md:pt-16"
 		>
-			<div class="mb-3 md:mb-4">
+			<!-- En-tête -->
+			<div class="mb-6">
 				<a
 					href="/arcade"
-					class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-2 text-sm"
+					class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-2 text-sm transition-colors"
 				>
 					<svg
 						class="w-4 h-4"
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
+						aria-hidden="true"
 					>
 						<path
 							stroke-linecap="round"
@@ -51,75 +58,82 @@ function getImageUrl(record: any): string {
 					</svg>
 					Retour
 				</a>
-				<h1 class="font-title text-xl md:text-2xl text-black">
+				<h1 class="font-title text-2xl md:text-3xl text-black">
 					Puzzle des signes
 				</h1>
-				<p class="text-gray-600 text-xs md:text-sm mt-1">
+				<p class="text-gray-600 text-sm mt-1">
 					Remets les signes dans le bon ordre pour reformer la phrase.
 				</p>
 			</div>
 
-			<div class="grid gap-3 lg:grid-cols-[1.05fr_0.95fr]">
+			<div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+				
 				<section
-					class="space-y-3 rounded-2xl bg-white p-3 md:p-4 shadow-soft border border-black/5"
+					class="space-y-4 rounded-3xl bg-white p-5 md:p-6 shadow-soft border border-black/5 flex flex-col justify-between"
 				>
 					<div
-						class="rounded-xl bg-cyan-50 px-3 py-3 border border-cyan-100"
+						class="rounded-2xl bg-blue/10 px-5 py-4 border border-blue/20"
 					>
 						<p
-							class="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-700"
+							class="text-xs font-bold uppercase tracking-widest text-blue mb-1"
 						>
 							Phrase à reconstruire
 						</p>
 						<p
 							id="phraseText"
-							class="mt-1 font-title text-lg md:text-xl leading-tight text-black"
+							class="font-body text-xl md:text-2xl leading-tight text-black font-medium"
+							aria-live="polite"
 						>
-							Chargement de la phrase...
+							Chargement...
 						</p>
 					</div>
 
 					<div>
 						<div
-							class="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.18em] text-black/45"
+							class="mb-3 flex items-center justify-between text-xs font-bold uppercase tracking-widest text-black/40"
 						>
 							<span>Ordre 1</span>
 							<span>Ordre 4</span>
 						</div>
 						<div
 							id="slotBoard"
-							class="grid grid-cols-2 gap-2 md:grid-cols-4"
+							class="grid grid-cols-2 gap-3 md:grid-cols-4"
 						>
+							
 						</div>
 					</div>
 				</section>
 
+				
 				<section
-					class="space-y-3 rounded-2xl bg-white p-3 md:p-4 shadow-soft border border-black/5"
+					class="space-y-5 rounded-3xl bg-white p-5 md:p-6 shadow-soft border border-black/5 flex flex-col justify-between"
 				>
 					<div>
 						<p
-							class="text-[10px] font-bold uppercase tracking-[0.22em] text-black/45"
+							class="text-xs font-bold uppercase tracking-widest text-black/40"
 						>
 							Signes disponibles
 						</p>
-						<p class="mt-1 text-xs text-gray-600">
+						<p class="mt-1 text-sm text-gray-600">
 							Clique ou glisse les cartes dans le bon ordre.
 						</p>
 					</div>
 
-					<div id="bankBoard" class="grid grid-cols-2 gap-2"></div>
+					<div id="bankBoard" class="grid grid-cols-2 gap-3">
+						
+					</div>
 
 					<button
 						id="validateBtn"
-						class="w-full rounded-full bg-blue px-5 py-2.5 text-base font-title text-black transition-transform hover:scale-[1.01] hover:bg-cyan-300"
+						class="w-full rounded-2xl bg-blue px-6 py-3.5 text-lg font-bold text-white shadow-md transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						Valider
 					</button>
 
 					<div
 						id="feedback"
-						class="min-h-12 rounded-2xl flex items-center justify-center px-3 text-center text-sm font-semibold opacity-0 transition-opacity"
+						class="min-h-[3rem] rounded-xl flex items-center justify-center px-4 text-center text-sm font-semibold opacity-0 transition-opacity"
+						aria-live="polite"
 					>
 					</div>
 				</section>
@@ -136,8 +150,8 @@ function getImageUrl(record: any): string {
 		if (!mainEl) return;
 
 		const signes = JSON.parse(mainEl.dataset.signes || "[]");
-
 		const PUZZLE_SIZE = 4;
+
 		const phraseText = document.getElementById("phraseText");
 		const slotBoard = document.getElementById("slotBoard");
 		const bankBoard = document.getElementById("bankBoard");
@@ -164,27 +178,16 @@ function getImageUrl(record: any): string {
 		let slotElements: HTMLElement[] = [];
 		let bankCardById = new Map();
 		let solvedTimeout: number | null = null;
-
-		// --- NOUVEAU : Compteur d'erreurs pour moduler l'XP ---
 		let puzzleErrors = 0;
 
-		function getImageUrl(record: any) {
-			if (record.image) {
-				return `https://odysigne.carnicer.fr/api/files/signes/${record.id}/${record.image}`;
-			}
-			return "";
-		}
-
-		function shuffle(array: any[]) {
-			return [...array].sort(() => Math.random() - 0.5);
-		}
+		const shuffle = (array: any[]) =>
+			[...array].sort(() => Math.random() - 0.5);
 
 		function formatSignText(signs: any[]) {
 			if (signs.length === 0) return "";
 			if (signs.length === 1) return signs[0].nom_signe || "";
-			if (signs.length === 2) {
+			if (signs.length === 2)
 				return `${signs[0].nom_signe} et ${signs[1].nom_signe}`;
-			}
 			const parts = signs.map((sign) => sign.nom_signe || "");
 			return `${parts.slice(0, -1).join(", ")}, et ${parts.at(-1)}`;
 		}
@@ -196,7 +199,6 @@ function getImageUrl(record: any): string {
 				(words: string) => `Pour apprendre, je répète ${words}.`,
 				(words: string) => `Dans le bon ordre, on lit ${words}.`,
 			];
-
 			const template =
 				sentenceTemplates[
 					Math.floor(Math.random() * sentenceTemplates.length)
@@ -208,52 +210,52 @@ function getImageUrl(record: any): string {
 			if (!feedback) return;
 			feedback.textContent = "";
 			feedback.className =
-				"min-h-14 rounded-2xl flex items-center justify-center px-4 text-center font-semibold opacity-0 transition-opacity";
+				"min-h-[3rem] rounded-xl flex items-center justify-center px-4 text-center font-semibold opacity-0 transition-opacity";
 		}
 
-		function setFeedback(message: string, variant: string) {
+		function setFeedback(
+			message: string,
+			variant: "success" | "error" | "neutral",
+		) {
 			if (!feedback) return;
-			const variantClasses =
-				variant === "success"
-					? "bg-green-100 text-green-700 opacity-100"
-					: variant === "error"
-						? "bg-red-100 text-red-700 opacity-100"
-						: "bg-cyan-50 text-cyan-700 opacity-100";
+			const variantClasses = {
+				success: "bg-emerald-100 text-emerald-700 opacity-100",
+				error: "bg-red-100 text-red-700 opacity-100",
+				neutral: "bg-blue/10 text-blue opacity-100",
+			}[variant];
+
 			feedback.textContent = message;
-			feedback.className = `min-h-14 rounded-2xl flex items-center justify-center px-4 text-center font-semibold transition-opacity ${variantClasses}`;
+			feedback.className = `min-h-[3rem] mt-2 rounded-xl flex items-center justify-center px-4 text-center font-semibold transition-opacity ${variantClasses}`;
 		}
 
 		function updateSelectionState() {
-			bankCardById.forEach((card) => {
-				const isSelected = card.dataset.cardId === selectedCardId;
+			bankCardById.forEach((card, cardId) => {
+				const isSelected = cardId === selectedCardId;
 				card.classList.toggle("ring-4", isSelected);
 				card.classList.toggle("ring-blue", isSelected);
-				card.classList.toggle("scale-[1.02]", isSelected);
+				card.classList.toggle("scale-105", isSelected);
 			});
 		}
 
-		function renderBankCard(sign: any, mode = "bank") {
+		
+		function getCardInnerHtml(sign: any) {
+			return `
+        <div class="flex w-full flex-1 items-center justify-center rounded-xl bg-gray-50 p-2 overflow-hidden mb-2 pointer-events-none">
+            <img src="${sign.imageUrl}" alt="${sign.nom_signe}" class="max-h-16 w-full object-contain" draggable="false" />
+        </div>
+        <span class="text-xs font-semibold text-black leading-tight pointer-events-none">${sign.nom_signe}</span>
+      `;
+		}
+
+		function renderBankCard(sign: any) {
 			const card = document.createElement("button");
 			card.type = "button";
 			card.draggable = true;
 			card.dataset.cardId = sign.id;
-			card.dataset.cardName = sign.nom_signe || "";
-			card.dataset.cardMode = mode;
-			card.className =
-				mode === "bank"
-					? "puzzle-card flex min-h-[8rem] w-full flex-col items-center justify-center rounded-xl border-2 border-emerald-300 bg-white p-2 text-center shadow-soft transition-all hover:-translate-y-1 hover:shadow-md"
-					: "puzzle-card flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-emerald-300 bg-white p-2 text-center shadow-sm";
 
-			const imageUrl = getImageUrl(sign);
-			card.innerHTML = `
-                <div class="flex w-full flex-1 items-center justify-center rounded-lg bg-gray-50 p-1.5 overflow-hidden">
-                    ${
-						imageUrl
-							? `<img src="${imageUrl}" alt="${sign.nom_signe || "Signe"}" class="max-h-20 w-full object-contain" />`
-							: `<div class="flex h-16 w-full items-center justify-center rounded-lg bg-gray-200 text-[10px] text-gray-500">Image indisponible</div>`
-					}
-                </div>
-            `;
+			card.className =
+				"puzzle-card flex min-h-[8rem] w-full flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-2 text-center transition-all hover:-translate-y-1 hover:border-blue hover:shadow-md cursor-grab active:cursor-grabbing";
+			card.innerHTML = getCardInnerHtml(sign);
 
 			card.addEventListener("click", () => {
 				if (isLocked) return;
@@ -261,12 +263,12 @@ function getImageUrl(record: any): string {
 				updateSelectionState();
 			});
 
-			card.addEventListener("dragstart", (event) => {
+			card.addEventListener("dragstart", (e) => {
 				if (isLocked) return;
 				selectedCardId = sign.id;
 				updateSelectionState();
-				event.dataTransfer?.setData("text/plain", sign.id);
-				event.dataTransfer?.setDragImage(card, 40, 40);
+				e.dataTransfer?.setData("text/plain", sign.id);
+				e.dataTransfer?.setDragImage(card, 40, 40);
 			});
 
 			return card;
@@ -274,11 +276,11 @@ function getImageUrl(record: any): string {
 
 		function renderSlotPlaceholder(index: number) {
 			return `
-                <div class="flex h-full min-h-[7rem] flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 text-gray-400 transition-colors">
-                    <span class="text-[10px] font-bold uppercase tracking-[0.18em]">Place ${index + 1}</span>
-                    <span class="mt-1 text-2xl font-bold">${index + 1}</span>
-                </div>
-            `;
+        <div class="flex h-full w-full min-h-[8rem] flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50/50 text-gray-400 transition-colors pointer-events-none">
+          <span class="text-[10px] font-bold uppercase tracking-widest">Place</span>
+          <span class="mt-1 text-3xl font-bold">${index + 1}</span>
+        </div>
+      `;
 		}
 
 		function createSlot(index: number) {
@@ -286,7 +288,7 @@ function getImageUrl(record: any): string {
 			slot.type = "button";
 			slot.dataset.slotIndex = index.toString();
 			slot.className =
-				"puzzle-slot group h-full min-h-[7rem] rounded-xl transition-all";
+				"puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all p-0 overflow-hidden";
 			slot.innerHTML = renderSlotPlaceholder(index);
 
 			slot.addEventListener("click", () => {
@@ -300,26 +302,25 @@ function getImageUrl(record: any): string {
 					return;
 				}
 
-				if (currentCardId) {
-					removeCardFromSlot(index);
-				}
+				if (currentCardId) removeCardFromSlot(index);
 			});
 
-			slot.addEventListener("dragover", (event) => {
+			slot.addEventListener("dragover", (e) => {
 				if (isLocked) return;
-				event.preventDefault();
-				slot.classList.add("scale-[1.01]");
+				e.preventDefault();
+				slot.classList.add("scale-105", "opacity-80");
 			});
 
 			slot.addEventListener("dragleave", () => {
-				slot.classList.remove("scale-[1.01]");
+				slot.classList.remove("scale-105", "opacity-80");
 			});
 
-			slot.addEventListener("drop", (event) => {
+			slot.addEventListener("drop", (e) => {
 				if (isLocked) return;
-				event.preventDefault();
-				slot.classList.remove("scale-[1.01]");
-				const draggedId = event.dataTransfer?.getData("text/plain");
+				e.preventDefault();
+				slot.classList.remove("scale-105", "opacity-80");
+				const draggedId = e.dataTransfer?.getData("text/plain");
+
 				if (draggedId) {
 					placeCard(draggedId, index);
 					selectedCardId = null;
@@ -341,7 +342,7 @@ function getImageUrl(record: any): string {
 			if (slot) {
 				slot.innerHTML = renderSlotPlaceholder(slotIndex);
 				slot.className =
-					"puzzle-slot group h-full min-h-[7rem] rounded-xl transition-all";
+					"puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all p-0 overflow-hidden";
 			}
 
 			const bankCard = bankCardById.get(cardId);
@@ -351,7 +352,7 @@ function getImageUrl(record: any): string {
 					"opacity-0",
 					"pointer-events-none",
 				);
-				bankCard.classList.add("opacity-100");
+				bankCard.classList.add("flex");
 			}
 
 			validateBtn.disabled = false;
@@ -383,10 +384,10 @@ function getImageUrl(record: any): string {
 
 			const slot = slotElements[slotIndex];
 			if (slot) {
-				slot.innerHTML = "";
+				
+				slot.innerHTML = `<div class="flex h-full w-full flex-col items-center justify-center p-2 text-center pointer-events-none">${getCardInnerHtml(sign)}</div>`;
 				slot.className =
-					"puzzle-slot group h-full min-h-[7rem] rounded-xl transition-all";
-				slot.appendChild(renderBankCard(sign, "slot"));
+					"puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all shadow-sm ring-2 ring-blue bg-white p-0 overflow-hidden";
 			}
 
 			const bankCard = bankCardById.get(cardId);
@@ -396,7 +397,7 @@ function getImageUrl(record: any): string {
 					"opacity-0",
 					"pointer-events-none",
 				);
-				bankCard.classList.remove("opacity-100");
+				bankCard.classList.remove("flex");
 			}
 
 			clearFeedback();
@@ -413,61 +414,46 @@ function getImageUrl(record: any): string {
 			);
 
 			slotElements.forEach((slot, index) => {
-				const cardId = placedBySlot[index];
-				const correct = cardId === correctOrder[index].id;
-				slot.classList.remove(
-					"border-red-400",
-					"bg-red-50",
-					"border-green-500",
-					"bg-green-50",
-				);
-				slot.classList.add(
-					correct ? "border-green-500" : "border-red-400",
-					correct ? "bg-green-50" : "bg-red-50",
-				);
+				const correct = placedBySlot[index] === correctOrder[index].id;
+				slot.className = `puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all shadow-sm ring-4 bg-white p-0 overflow-hidden ${correct ? "ring-emerald-500" : "ring-red-400"}`;
 			});
 
 			if (isCorrect) {
 				isLocked = true;
 				validateBtn.disabled = true;
 
-				// --- GESTION XP : Moins d'erreurs = Plus d'XP ---
 				const maxPoints = 4;
-				const pointsObtenus = Math.max(1, 4 - puzzleErrors); // 1 point minimum garanti pour avoir fini
+				const pointsObtenus = Math.max(1, 4 - puzzleErrors);
 				const xpGagnee = await attribuerXP(pointsObtenus, maxPoints);
 
 				setFeedback(`Bravo ! (+ ${xpGagnee} XP)`, "success");
 
-				if (solvedTimeout) {
-					window.clearTimeout(solvedTimeout);
-				}
-				solvedTimeout = window.setTimeout(() => {
-					buildPuzzle();
-				}, 1800);
+				if (solvedTimeout) window.clearTimeout(solvedTimeout);
+				solvedTimeout = window.setTimeout(buildPuzzle, 2000);
 				return;
 			}
 
 			puzzleErrors++;
 			setFeedback(
-				"Ce n'est pas encore le bon ordre. Essaie encore.",
+				"Ce n'est pas le bon ordre. Clique sur une carte pour l'enlever.",
 				"error",
 			);
 		}
 
 		function buildPuzzle() {
+			
 			const validSigns = signes.filter(
-				(signe: any) => signe.nom_signe && getImageUrl(signe),
+				(signe: any) => signe.nom_signe && signe.image,
 			);
+
 			if (!phraseText || !slotBoard || !bankBoard) return;
 
 			if (validSigns.length < PUZZLE_SIZE) {
 				phraseText.textContent =
 					"Pas assez de signes disponibles pour créer un puzzle.";
-				slotBoard.innerHTML = "";
-				bankBoard.innerHTML = "";
 				validateBtn.disabled = true;
 				setFeedback(
-					"Ajoute au moins 4 signes avec une image dans PocketBase.",
+					"Ajoute au moins 4 signes avec une image dans la base de données.",
 					"error",
 				);
 				return;
@@ -485,7 +471,7 @@ function getImageUrl(record: any): string {
 			selectedCardId = null;
 			isLocked = false;
 			validateBtn.disabled = false;
-			puzzleErrors = 0; // Réinitialise les erreurs pour le nouveau puzzle
+			puzzleErrors = 0;
 
 			phraseText.textContent = buildSentence(correctOrder);
 			clearFeedback();
@@ -500,7 +486,7 @@ function getImageUrl(record: any): string {
 			bankBoard.innerHTML = "";
 			bankCardById = new Map();
 			bankOrder.forEach((sign, index) => {
-				const card = renderBankCard(sign, "bank");
+				const card = renderBankCard(sign);
 				card.dataset.cardIndex = index.toString();
 				bankCardById.set(sign.id, card);
 				bankBoard.appendChild(card);

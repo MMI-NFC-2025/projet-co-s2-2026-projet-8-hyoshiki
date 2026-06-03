@@ -6,240 +6,222 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import { pb } from "../lib/pocketbase";
 
-// Récupérer tous les signes depuis PocketBase
 let signes: any[] = [];
+
 try {
-    signes = await pb
-        .collection("signes")
-        .getFullList(200, { sort: "nom_signe" });
+  // Récupération des signes
+  signes = await pb.collection("signes").getFullList(200, { sort: "nom_signe" });
 } catch (error) {
-    console.error("Erreur lors de la récupération des signes:", error);
+  console.error("Erreur lors de la récupération des signes:", error);
 }
 
+const PB_URL = "https://odysigne.carnicer.fr";
+
 function getImageUrl(record: any): string {
-    if (record.image) {
-        return `https://odysigne.carnicer.fr/api/files/signes/${record.id}/${record.image}`;
-    }
-    return "";
+  return record.image ? `${PB_URL}/api/files/signes/${record.id}/${record.image}` : "";
 }
 ---
 
 <Layout
-    title="Odysignes - Dictionnaire LSF"
-    description="Dictionnaire complet de la langue des signes"
+  title="Odysignes - Dictionnaire LSF"
+  description="Dictionnaire complet de la langue des signes"
 >
-    <div class="bg-white min-h-screen flex flex-col">
-        <Header />
+  <div class="bg-white min-h-screen flex flex-col">
+    <Header />
 
-        <main class="flex-1 mx-auto mt-6 max-w-6xl w-full px-4 py-8">
-            <div class="mb-8">
-                <a
-                    href="/accueil"
-                    class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-4"
-                >
-                    <svg
-                        class="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                    Retour
-                </a>
-                <h1 class="font-title text-4xl text-black">Dictionnaire LSF</h1>
-                <p class="text-gray-600 mt-2">
-                    Retrouvez tous nos signes de la langue des signes française
-                </p>
-            </div>
+    <main class="flex-1 mx-auto w-full max-w-6xl px-4 py-8">
+      
+      <!-- En-tête -->
+      <div class="mb-8">
+        <a href="/accueil" class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-4 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Retour
+        </a>
+        <h1 class="font-title text-4xl text-black">Dictionnaire LSF</h1>
+        <p class="text-gray-600 mt-2">
+          Retrouvez tous nos signes de la langue des signes française.
+        </p>
+      </div>
 
-            <!-- Barre de recherche -->
-            <div class="mb-8">
-                <input
-                    type="text"
-                    id="searchInput"
-                    placeholder="Rechercher un signe..."
-                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue transition-colors"
-                />
-            </div>
+      <!-- Barre de recherche -->
+      <div class="mb-8">
+        <label for="searchInput" class="sr-only">Rechercher un signe</label>
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="Rechercher un signe..."
+          class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue focus:ring-2 focus:ring-blue/20 transition-all"
+        />
+      </div>
 
-            <!-- Grille de signes -->
-            <div
-                id="signesContainer"
-                class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+    
+      <div id="signesContainer" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {signes.map((signe) => {
+          const imageUrl = getImageUrl(signe);
+          return (
+            <button
+              type="button"
+              class="signe-card group border-2 border-gray-100 bg-white rounded-xl p-4 hover:shadow-md hover:border-blue transition-all flex flex-col items-center"
+              data-nom={signe.nom_signe}
+              data-image={imageUrl}
+              aria-label={`Voir le détail du signe : ${signe.nom_signe}`}
             >
-                {
-                    signes.map((signe) => (
-                        <div
-                            class="signe-card border-2 border-gray-200 rounded-xl p-4 hover:shadow-md hover:border-blue transition-all cursor-pointer flex flex-col items-center"
-                            data-signe-name={signe.nom_signe?.toLowerCase()}
-                        >
-                            {signe.image && getImageUrl(signe) ? (
-                                <div class="w-full h-32 flex items-center justify-center bg-gray-50 rounded-lg mb-3">
-                                    <img
-                                        src={getImageUrl(signe)}
-                                        alt={signe.nom_signe}
-                                        class="max-w-full max-h-full object-contain"
-                                    />
-                                </div>
-                            ) : (
-                                <div class="w-full h-32 flex items-center justify-center bg-gray-100 rounded-lg mb-3 text-gray-400">
-                                    <span>Pas d'image</span>
-                                </div>
-                            )}
-                            <h3 class="font-semibold text-center text-sm text-black">
-                                {signe.nom_signe}
-                            </h3>
-                        </div>
-                    ))
-                }
-            </div>
-
-            <!-- Message si aucun résultat -->
-            <div id="noResults" class="hidden text-center py-12">
-                <p class="text-gray-600 text-lg">Aucun signe trouvé</p>
-            </div>
-
-            <!-- Modal pour affichage détail du signe -->
-            <div
-                id="signeModal"
-                class="hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4"
-                style="display: none;"
-            >
-                <div class="bg-white rounded-2xl max-w-md w-full p-6 relative">
-                    <button
-                        id="closeModal"
-                        class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
-                    >
-                        <svg
-                            class="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-
-                    <div class="flex flex-col items-center gap-4">
-                        <img
-                            id="modalImage"
-                            src=""
-                            alt="Signe détail"
-                            class="w-full h-64 object-contain"
-                        />
-                        <h2
-                            id="modalTitle"
-                            class="font-title text-2xl text-black text-center"
-                        >
-                        </h2>
-                    </div>
+              {imageUrl ? (
+                <div class="w-full h-32 flex items-center justify-center bg-gray-50 rounded-lg mb-3 overflow-hidden">
+                  <!-- Ajout de loading="lazy" et d'un effet de zoom au survol -->
+                  <img
+                    src={imageUrl}
+                    alt={`Illustration de ${signe.nom_signe}`}
+                    loading="lazy"
+                    class="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                  />
                 </div>
-            </div>
-        </main>
+              ) : (
+                <div class="w-full h-32 flex items-center justify-center bg-gray-50 rounded-lg mb-3 text-gray-400">
+                  <span class="text-sm font-medium">Pas d'image</span>
+                </div>
+              )}
+              <h3 class="font-semibold text-center text-sm text-black group-hover:text-blue transition-colors">
+                {signe.nom_signe}
+              </h3>
+            </button>
+          );
+        })}
+      </div>
 
-        <div class="mt-8">
-            <Footer logoSrc={undefined} />
+      <!-- Message si aucun résultat -->
+      <div id="noResults" class="hidden text-center py-12">
+        <p class="text-gray-500 text-lg font-medium">Aucun signe trouvé pour cette recherche.</p>
+      </div>
+
+     
+      <div
+        id="signeModal"
+        class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300"
+        aria-modal="true"
+        role="dialog"
+      >
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 relative shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
+          <button
+            id="closeModal"
+            class="absolute top-5 right-5 text-gray-400 hover:text-black hover:bg-gray-100 p-2 rounded-full transition-all"
+            aria-label="Fermer la fenêtre"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+
+          <div class="flex flex-col items-center gap-6 mt-4">
+            <div class="w-full h-64 bg-gray-50 rounded-2xl flex items-center justify-center p-4">
+              <img id="modalImage" src="" alt="" class="max-w-full max-h-full object-contain" />
+            </div>
+            <h2 id="modalTitle" class="font-title text-3xl text-black text-center"></h2>
+          </div>
         </div>
-    </div>
+      </div>
+
+    </main>
+    <Footer />
+  </div>
 </Layout>
 
-<script lang="ts" define:vars={{ signes }}>
-    const searchInput = document.getElementById("searchInput");
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("searchInput") as HTMLInputElement;
     const signesContainer = document.getElementById("signesContainer");
     const noResults = document.getElementById("noResults");
-    const signeCards = document.querySelectorAll(".signe-card");
+    const signeCards = document.querySelectorAll<HTMLElement>(".signe-card");
+    
     const signeModal = document.getElementById("signeModal");
-    const closeModal = document.getElementById("closeModal");
-    const modalImage = document.getElementById("modalImage");
+    const modalContent = document.getElementById("modalContent");
+    const closeModalBtn = document.getElementById("closeModal");
+    const modalImage = document.getElementById("modalImage") as HTMLImageElement;
     const modalTitle = document.getElementById("modalTitle");
 
-    function filterSignes() {
-        const searchTerm = (searchInput.value || "").toLowerCase();
-        let visibleCount = 0;
+    
+    if (!searchInput || !signesContainer || !noResults || !signeModal) return;
 
-        signeCards.forEach((card) => {
-            const signe_name = card.getAttribute("data-signe-name") || "";
-            if (signe_name.includes(searchTerm)) {
-                card.style.display = "flex";
-                visibleCount++;
-            } else {
-                card.style.display = "none";
-            }
-        });
+    // 1. Filtrage optimisé
+    searchInput.addEventListener("input", (e) => {
+      const searchTerm = (e.target as HTMLInputElement).value.toLowerCase().trim();
+      let visibleCount = 0;
 
-        // Afficher/masquer le message "aucun résultat"
-        if (visibleCount === 0 && searchTerm !== "") {
-            noResults?.classList.remove("hidden");
-            signesContainer?.classList.add("hidden");
+      signeCards.forEach((card) => {
+        // On récupère le nom directement depuis le data-attribute
+        const nom = (card.dataset.nom || "").toLowerCase();
+        
+        if (nom.includes(searchTerm)) {
+          card.classList.remove("hidden");
+          card.classList.add("flex");
+          visibleCount++;
         } else {
-            noResults?.classList.add("hidden");
-            signesContainer?.classList.remove("hidden");
+          card.classList.add("hidden");
+          card.classList.remove("flex");
         }
-    }
+      });
 
-    function openSigneModal(signe) {
-        const imageUrl = signe.image
-            ? `https://odysigne.carnicer.fr/api/files/signes/${signe.id}/${signe.image}`
-            : "";
-
-        if (modalImage) modalImage.setAttribute("src", imageUrl);
-        if (modalTitle) modalTitle.textContent = signe.nom_signe;
-        signeModal?.classList.remove("hidden");
-        signeModal?.style.setProperty("display", "flex");
-    }
-
-    function closeSigneModal() {
-        signeModal?.classList.add("hidden");
-        signeModal?.style.setProperty("display", "none");
-    }
-
-    // Écouter les changements de la barre de recherche
-    searchInput?.addEventListener("input", filterSignes);
-
-    // Fermer la modal
-    closeModal?.addEventListener("click", closeSigneModal);
-    signeModal?.addEventListener("click", (e) => {
-        if (e.target === signeModal) {
-            closeSigneModal();
-        }
+      // Gestion de l'affichage du conteneur "Aucun résultat"
+      if (visibleCount === 0 && searchTerm !== "") {
+        noResults.classList.remove("hidden");
+        signesContainer.classList.add("hidden");
+        signesContainer.classList.remove("grid");
+      } else {
+        noResults.classList.add("hidden");
+        signesContainer.classList.remove("hidden");
+        signesContainer.classList.add("grid");
+      }
     });
 
-    // Ajouter un événement de clic sur les cartes
+    
+    const openModal = (nom: string, imageUrl: string) => {
+      if (modalTitle) modalTitle.textContent = nom;
+      
+      if (modalImage) {
+        modalImage.src = imageUrl;
+        modalImage.alt = `Détail du signe : ${nom}`;
+        modalImage.style.display = imageUrl ? "block" : "none";
+      }
+
+      
+      signeModal.classList.remove("hidden");
+      signeModal.classList.add("flex");
+    
+      requestAnimationFrame(() => {
+        signeModal.classList.remove("opacity-0");
+        modalContent?.classList.remove("scale-95");
+      });
+    };
+
+    const closeModal = () => {
+      signeModal.classList.add("opacity-0");
+      modalContent?.classList.add("scale-95");
+      
+      setTimeout(() => {
+        signeModal.classList.add("hidden");
+        signeModal.classList.remove("flex");
+      }, 300);
+    };
+
     signeCards.forEach((card) => {
-        card.addEventListener("click", function () {
-            // Trouver le signe correspondant
-            const signe_name = this.getAttribute("data-signe-name");
-            const signe = signes.find(
-                (s) => s.nom_signe?.toLowerCase() === signe_name,
-            );
-            if (signe) {
-                openSigneModal(signe);
-            }
-        });
+      card.addEventListener("click", () => {
+        // Plus besoin de faire un .find() dans un tableau, les infos sont sur la carte !
+        openModal(card.dataset.nom || "", card.dataset.image || "");
+      });
     });
 
-    // Fermer la modal avec la touche Échap
+    closeModalBtn?.addEventListener("click", closeModal);
+    
+    signeModal.addEventListener("click", (e) => {
+      if (e.target === signeModal) closeModal();
+    });
+    
     document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-            closeSigneModal();
-        }
+      if (e.key === "Escape" && !signeModal.classList.contains("hidden")) {
+        closeModal();
+      }
     });
+  });
 </script>
-
-<style>
-    .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-</style>

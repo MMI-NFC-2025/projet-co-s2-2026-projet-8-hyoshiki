@@ -116,7 +116,7 @@ const modes = [
 ];
 
 const heroStats = [
-	{ value: "10K +", label: "Apprenants actifs" },
+	{ value: "10K+", label: "Apprenants actifs" },
 	{ value: "500+", label: "Mots LSF" },
 	{ value: "4.9/5", label: "Note moyenne" },
 ];
@@ -139,7 +139,7 @@ const team = [
 	{
 		avatar: avatarMatthis,
 		name: "MATTHIS",
-		role: "Developpement technique",
+		role: "Développement technique", // Correction orthographique
 		description:
 			"Garant de la fluidité et de la technique, Matthis transforme nos idées en une plateforme interactive et sécurisée. Il veille à ce que chaque ligne de code serve l'accessibilité et le plaisir d'apprendre pour tous nos utilisateurs.",
 	},
@@ -164,31 +164,38 @@ const team = [
 			<img
 				src={shapeHero.src}
 				alt=""
-				class="absolute right-0 top-10 hidden w-[520px] md:block"
+				aria-hidden="true"
+				class="absolute right-0 top-10 hidden w-[32rem] md:block"
 			/>
+
 			<div
-				class="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 md:grid-cols-[1.1fr_1fr]"
+				class="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 md:grid-cols-[1.1fr_1fr] relative z-10"
 			>
 				<div class="space-y-6">
 					<h1
-						class="font-title text-4xl leading-tight text-black md:text-5xl"
+						class="font-title text-4xl leading-tight text-black md:text-5xl lg:text-6xl"
 					>
 						Apprenez la <span class="text-blue"
 							>Langue des signes</span
 						> en vous amusant
 					</h1>
 					<p
-						class="max-w-xl text-base leading-relaxed text-black font-body"
+						class="max-w-xl text-base leading-relaxed text-black/80 font-body"
 					>
 						Odysignes révolutionne l'apprentissage de la LSF avec
 						des aventures narratives, des leçons thématiques et des
 						mini-jeux captivants. Rejoignez Hyo et Shiki dans cette
 						aventure linguistique unique !
 					</p>
-					<Button href="#cta" size="lg" class="rounded-xl font-normal"
-						>Commencer l'aventure</Button
+					<Button
+						href="#cta"
+						size="lg"
+						class="rounded-2xl font-semibold shadow-lg shadow-blue/30"
 					>
-					<div class="grid max-w-md grid-cols-3 gap-6 pt-4 font-body">
+						Commencer l'aventure
+					</Button>
+
+					<div class="grid max-w-md grid-cols-3 gap-6 pt-6 font-body">
 						{
 							heroStats.map((stat) => (
 								<StatItem
@@ -199,13 +206,18 @@ const team = [
 						}
 					</div>
 				</div>
+
 				<div class="relative flex items-center justify-center">
 					<div class="relative flex items-end gap-6">
-						<img src={hyo.src} alt="Hyo" class="h-[360px] w-auto" />
+						<img
+							src={hyo.src}
+							alt="Personnage Hyo"
+							class="h-80 md:h-96 w-auto drop-shadow-xl"
+						/>
 						<img
 							src={shiki.src}
-							alt="Shiki"
-							class="h-[340px] w-auto"
+							alt="Personnage Shiki"
+							class="h-72 md:h-80 w-auto drop-shadow-xl"
 						/>
 					</div>
 				</div>
@@ -213,23 +225,27 @@ const team = [
 		</section>
 	</div>
 
-	<section id="fonctionnalites" class="relative overflow-hidden py-16">
+	<section id="fonctionnalites" class="relative overflow-hidden py-20">
 		<img
 			src={shapeTop.src}
 			alt=""
-			class="absolute left-0 top-0 hidden w-[560px] z-0 md:block"
+			aria-hidden="true"
+			class="absolute left-0 top-0 hidden w-[36rem] z-0 md:block opacity-50"
+			loading="lazy"
 		/>
+
 		<div class="relative z-10 mx-auto max-w-6xl px-6">
-			<div class="text-center">
-				<h2 class="font-title text-[3.25rem] text-black">
+			<div class="text-center mb-12">
+				<h2 class="font-title text-4xl md:text-5xl text-black">
 					Pourquoi choisir <span class="text-blue">Odysignes</span> ?
 				</h2>
-				<p class="mt-3 text-sm text-black">
+				<p class="mt-4 text-base text-black/70 max-w-2xl mx-auto">
 					Une approche innovante qui combine narration, gamification
 					et apprentissage adaptatif
 				</p>
 			</div>
-			<div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+			<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 				{
 					features.map((feature) => (
 						<FeatureCard
@@ -243,18 +259,18 @@ const team = [
 		</div>
 	</section>
 
-	<section id="apprentissage" class="bg-[#e9f9ff] py-16">
+	<section id="apprentissage" class="bg-[#e9f9ff] py-20">
 		<div class="mx-auto max-w-6xl px-6">
-			<div class="text-center">
-				<h2 class="font-title text-[3.25rem] text-black">
+			<div class="text-center mb-12">
+				<h2 class="font-title text-4xl md:text-5xl text-black">
 					4 Modes d'apprentissage
 				</h2>
-				<p class="mt-2 text-sm text-black/60">
+				<p class="mt-4 text-base text-black/70 max-w-2xl mx-auto">
 					Choisissez le mode qui correspond à votre style
 					d'apprentissage
 				</p>
 			</div>
-			<div class="mt-10 grid gap-6 md:grid-cols-2">
+			<div class="grid gap-6 md:grid-cols-2">
 				{
 					modes.map((mode) => (
 						<ModeCard
@@ -269,123 +285,133 @@ const team = [
 		</div>
 	</section>
 
-	<section
-		class="relative overflow-hidden py-14 pb-28 md:pb-40"
-		style="background:var(--blue);"
-	>
+	<section class="relative overflow-hidden py-16 pb-32 md:pb-48 bg-blue z-0">
 		<img
 			src={shapeMid.src}
-			alt="forme bleue"
-			class="absolute left-0 -top-32 w-full h-auto pointer-events-none select-none -z-10"
-			style="min-width:520px; max-width:100%;"
+			alt=""
+			aria-hidden="true"
+			loading="lazy"
+			class="absolute left-0 -top-32 w-full h-auto pointer-events-none select-none -z-10 min-w-[32rem] max-w-full opacity-30"
 		/>
+
 		<div
-			class="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-6 text-white md:grid-cols-4"
+			class="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-6 text-white md:grid-cols-4 relative z-10"
 		>
 			{
 				megaStats.map((stat) => (
 					<div class="text-center">
-						<p class="text-5xl font-bold md:text-6xl">
+						<p class="text-5xl font-bold md:text-6xl drop-shadow-md">
 							{stat.value}
 						</p>
-						<p class="text-base md:text-lg uppercase tracking-wide text-white font-semibold mt-2 font-fredoka">
+						<p class="text-sm md:text-base uppercase tracking-wider text-white/90 font-semibold mt-3 font-fredoka">
 							{stat.label}
 						</p>
 					</div>
 				))
 			}
 		</div>
+
 		<div
-			class="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none"
-			style="height:160px;"
+			class="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none h-24 md:h-40"
 		>
 			<svg
-				class="w-full h-full"
+				class="w-full h-full text-white"
 				viewBox="0 0 1200 160"
 				preserveAspectRatio="none"
+				fill="currentColor"
 				xmlns="http://www.w3.org/2000/svg"
 			>
 				<path
 					d="M0,0 C175,125 375,125 600,80 C825,35 1025,130 1200,70 L1200,160 L0,160 Z"
-					fill="var(--white)"></path>
+				></path>
 			</svg>
 		</div>
 	</section>
 
-	<section class="bg-white py-16">
+	<section class="bg-white py-20">
 		<div class="mx-auto max-w-4xl px-6 text-center">
-			<h2 class="font-title text-3xl text-black md:text-4xl">
+			<h2 class="font-title text-4xl text-black md:text-5xl mb-8">
 				L'apprentissage de la LSF, <span class="text-blue"
 					>réinventé</span
 				>
 			</h2>
-			<p class="mt-4 text-base leading-relaxed text-black/70">
-				Odysignes est née d'une conviction : apprendre la langue des
-				signes française doit être accessible, ludique et motivant.
-				Inspiré par les meilleures applications d'apprentissage
-				linguistique, nous avons créé une expérience unique qui s'adapte
-				à votre style d'apprentissage visuel.
-			</p>
-			<p class="mt-4 text-base leading-relaxed text-black/70">
-				Que vous soyez débutant complet ou que vous souhaitiez
-				perfectionner vos connaissances, Hyoshiki vous accompagne à
-				chaque étape avec Hyo et Shiki, vos compagnons d'aventure
-				virtuels.
-			</p>
+			<div class="space-y-6 text-lg leading-relaxed text-black/75">
+				<p>
+					Odysignes est née d'une conviction : apprendre la langue des
+					signes française doit être accessible, ludique et motivant.
+					Inspiré par les meilleures applications d'apprentissage
+					linguistique, nous avons créé une expérience unique qui
+					s'adapte à votre style d'apprentissage visuel.
+				</p>
+				<p>
+					Que vous soyez débutant complet ou que vous souhaitiez
+					perfectionner vos connaissances, Hyoshiki vous accompagne à
+					chaque étape avec Hyo et Shiki, vos compagnons d'aventure
+					virtuels.
+				</p>
+			</div>
 		</div>
 	</section>
 
 	<section id="cta" class="relative overflow-hidden bg-blue py-24 md:py-32">
 		<div
-			class="absolute top-0 left-0 w-full overflow-hidden pointer-events-none"
-			style="height:120px; transform-origin:center; transform: translateY(-30px) rotate(180deg);"
+			class="absolute top-0 left-0 w-full overflow-hidden pointer-events-none h-24 md:h-32 -translate-y-6 rotate-180"
 		>
 			<svg
-				class="w-full h-full"
+				class="w-full h-full text-white"
 				viewBox="0 0 1200 160"
 				preserveAspectRatio="none"
+				fill="currentColor"
 				xmlns="http://www.w3.org/2000/svg"
 			>
 				<path
 					d="M0,0 C175,125 375,125 600,80 C825,35 1025,130 1200,70 L1200,160 L0,160 Z"
-					fill="var(--white)"></path>
+				></path>
 			</svg>
 		</div>
+
 		<div
-			class="mx-auto max-w-4xl px-6 text-center text-white relative z-10"
+			class="mx-auto max-w-3xl px-6 text-center text-white relative z-10 flex flex-col items-center"
 		>
-			<h2 class="font-title text-3xl md:text-4xl">
+			<h2 class="font-title text-4xl md:text-5xl mb-6 drop-shadow-md">
 				Prêt à commencer votre aventure LSF ?
 			</h2>
-			<p class="mt-3 text-base text-white/90">
+			<p class="text-lg md:text-xl text-white/90 mb-10">
 				Rejoignez des milliers d'apprenants dès aujourd'hui.
 			</p>
 
-			<a href="/register" class="font-semibold underline text-white/90"
-				>Inscrivez-vous gratuitement</a
+			<a
+				href="/register"
+				class="inline-flex items-center justify-center rounded-2xl bg-white text-blue px-8 py-4 font-title text-xl shadow-lg transition-all duration-300 hover:scale-105 hover:bg-gray-50 active:scale-95"
 			>
-
-			<div class="mt-6 flex justify-center px-2"></div>
+				Inscrivez-vous gratuitement
+			</a>
 		</div>
+
 		<div
-			class="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none"
-			style="height:120px; transform: translateY(30px);"
+			class="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none h-24 md:h-32 translate-y-6"
 		>
 			<svg
-				class="w-full h-full"
+				class="w-full h-full text-white"
 				viewBox="0 0 1200 160"
 				preserveAspectRatio="none"
+				fill="currentColor"
 				xmlns="http://www.w3.org/2000/svg"
 			>
 				<path
 					d="M0,0 C175,125 375,125 600,80 C825,35 1025,130 1200,70 L1200,160 L0,160 Z"
-					fill="var(--white)"></path>
+				></path>
 			</svg>
 		</div>
 	</section>
 
-	<section class="bg-white py-16">
+	<section class="bg-white py-20">
 		<div class="mx-auto max-w-6xl px-6">
+			<div class="text-center mb-12">
+				<h2 class="font-title text-4xl text-black">
+					L'équipe derrière <span class="text-blue">Odysignes</span>
+				</h2>
+			</div>
 			<div class="grid gap-8 md:grid-cols-3">
 				{
 					team.map((member) => (

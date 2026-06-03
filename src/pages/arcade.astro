@@ -13,26 +13,26 @@ const games = [
         href: "/jeu_swipe",
         icon: logoSwipe.src,
         label: "Swipez dans la bonne direction",
-        iconClass: "max-h-20 w-auto" // Taille normale
+        iconClass: "max-h-20 w-auto",
     },
     {
         href: "/quiz-vrai-faux",
         icon: logoVraiFaux.src,
         label: "Testez vos connaissances",
-        iconClass: "max-h-20 w-auto" // Taille normale
+        iconClass: "max-h-20 w-auto",
     },
     {
         href: "/puzzle",
         icon: logoPuzzle.src,
         label: "Reconstituez les dialogues",
-        iconClass: "max-h-24 w-auto scale-125 transition-transform" // Plus grand et zoomé
+        iconClass: "max-h-24 w-auto scale-125",
     },
     {
         href: "/memory",
         icon: logoMemory.src,
         label: "Associez image et signes",
-        iconClass: "max-h-24 w-auto scale-125 transition-transform" // Plus grand et zoomé
-    }
+        iconClass: "max-h-24 w-auto scale-125",
+    },
 ];
 ---
 
@@ -43,14 +43,17 @@ const games = [
     <div class="bg-white min-h-screen flex flex-col">
         <Header />
 
-        <main class="flex-1 mx-auto mt-6 w-full max-w-md px-6 py-8 flex flex-col items-center">
-            
+        <main
+            class="flex-1 mx-auto w-full max-w-md px-6 py-12 flex flex-col items-center"
+        >
             <div class="text-center mb-10">
-                <h1 class="font-title text-4xl text-blue uppercase tracking-wide mb-2">
+                <h1
+                    class="font-title text-4xl text-blue uppercase tracking-wide mb-2"
+                >
                     Arcade & Défis
                 </h1>
                 <p class="text-black font-body text-base">
-                    Donnez le meilleur de vous même !
+                    Donnez le meilleur de vous-même !
                 </p>
             </div>
 
@@ -59,20 +62,18 @@ const games = [
                     games.map((game) => (
                         <a
                             href={game.href}
-                            class="flex flex-col bg-blue rounded-[1.75rem] shadow-md transition-transform duration-200 hover:scale-[1.02] active:scale-95 overflow-hidden h-[180px]"
+                            class="group flex flex-col bg-blue rounded-3xl shadow-soft hover:shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-95 overflow-hidden h-44"
                         >
-                            <!-- Zone de l'icône avec alignement centré -->
                             <div class="flex-1 flex items-center justify-center p-6 overflow-hidden">
                                 <img
                                     src={game.icon}
-                                    alt=""
-                                    class={`object-contain ${game.iconClass}`}
+                                    alt={`Icône du jeu : ${game.label}`}
+                                    class={`object-contain transition-transform duration-300 group-hover:scale-110 ${game.iconClass}`}
                                 />
                             </div>
-                            
-                            <!-- Zone de texte fixe -->
-                            <div class="border-t-[1.5px] border-white/70 h-12 shrink-0 flex items-center justify-center px-4 bg-blue relative z-10">
-                                <span class="text-white font-title text-xs sm:text-sm uppercase tracking-wider text-center leading-tight">
+
+                            <div class="border-t border-white/30 h-12 shrink-0 flex items-center justify-center px-4 bg-blue/95 relative z-10">
+                                <span class="text-white font-title text-sm uppercase tracking-wider text-center leading-tight">
                                     {game.label}
                                 </span>
                             </div>
@@ -80,11 +81,8 @@ const games = [
                     ))
                 }
             </div>
-            
         </main>
 
-        <div class="mt-8">
-            <Footer logoSrc={undefined} />
-        </div>
+        <Footer />
     </div>
 </Layout>
