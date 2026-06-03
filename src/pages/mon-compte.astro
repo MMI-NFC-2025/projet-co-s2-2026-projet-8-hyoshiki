@@ -1,6 +1,5 @@
 ---
 export const prerender = false;
-
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
@@ -11,14 +10,12 @@ import fireIcon from "../assets/img/Fire_mon_compte.svg?url";
 import personIcon from "../assets/img/Person_mon_compte.svg?url";
 import settingsIcon from "../assets/img/Settings_mon_compte.svg?url";
 import trophyIcon from "../assets/img/Trophy_mon_compte.svg?url";
-
 const formatDate = (value: string) =>
     new Intl.DateTimeFormat("fr-FR", {
         day: "numeric",
         month: "long",
         year: "numeric",
     }).format(new Date(value));
-
 const defaultAvatar = `data:image/svg+xml,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Avatar">
         <rect width="200" height="200" rx="100" fill="#000000" />
@@ -26,16 +23,12 @@ const defaultAvatar = `data:image/svg+xml,${encodeURIComponent(
         <path d="M42 176c10-34 37-52 58-52s48 18 58 52" fill="#ffffff" />
     </svg>`,
 )}`;
-
 const authCookie = Astro.request.headers.get("cookie") ?? "";
 pb.authStore.loadFromCookie(authCookie);
-
 const currentUser = pb.authStore.model;
-
 if (!currentUser) {
     return Astro.redirect("/login");
 }
-
 const profileName =
     currentUser.pseudo ||
     currentUser.username ||
@@ -64,7 +57,6 @@ const memberSinceLabel = currentUser.created
 >
     <div class="min-h-screen bg-[#DDFBFF] text-black">
         <Header />
-
         <main
             class="mx-auto mt-10 flex w-full max-w-[430px] flex-col gap-6 px-4 py-6 pb-16 sm:mt-14 sm:max-w-3xl sm:px-6 sm:pb-24 lg:max-w-6xl lg:py-10 lg:pb-28"
         >
@@ -85,14 +77,12 @@ const memberSinceLabel = currentUser.created
                                 class="h-full w-full object-cover"
                             />
                         </div>
-
                         <input
                             type="file"
                             id="avatar-upload"
                             class="hidden"
                             accept="image/png, image/jpeg, image/webp, image/svg+xml"
                         />
-
                         <button
                             id="avatar-btn"
                             type="button"
@@ -107,11 +97,9 @@ const memberSinceLabel = currentUser.created
                             />
                         </button>
                     </div>
-
                     <h1 data-pseudo class="mt-4 font-title text-3xl text-black">
                         {profileName}
                     </h1>
-
                     <div
                         class="mt-5 w-full rounded-[1.5rem] bg-[#25cfe8] px-5 py-5 text-left text-white shadow-[0_10px_20px_rgba(37,207,232,0.18)]"
                     >
@@ -145,7 +133,6 @@ const memberSinceLabel = currentUser.created
                             {profileXp} / 250 XP
                         </p>
                     </div>
-
                     <div
                         class="mt-4 w-full rounded-[1.5rem] bg-white px-4 py-4 text-left shadow-[0_6px_18px_rgba(0,0,0,0.06)] ring-1 ring-black/5"
                     >
@@ -172,13 +159,11 @@ const memberSinceLabel = currentUser.created
                             </div>
                         </div>
                     </div>
-
                     <p data-member-since class="mt-5 text-sm text-black/40">
                         {memberSinceLabel}
                     </p>
                 </div>
             </section>
-
             <section
                 class="mx-auto flex w-full max-w-[330px] items-center rounded-full bg-white p-1 shadow-[0_8px_20px_rgba(0,0,0,0.08)] ring-1 ring-black/5 sm:max-w-md"
             >
@@ -209,7 +194,6 @@ const memberSinceLabel = currentUser.created
                     />
                 </button>
             </section>
-
             <div data-panel="profile" class="space-y-6">
                 <section
                     class="rounded-[2rem] bg-white px-5 py-7 shadow-[0_12px_30px_rgba(0,0,0,0.07)] ring-1 ring-black/5 sm:px-8"
@@ -229,7 +213,6 @@ const memberSinceLabel = currentUser.created
                             Informations du profil
                         </h2>
                     </div>
-
                     <form id="profile-form" class="mt-7 space-y-5">
                         <label class="block">
                             <span class="mb-2 block text-sm text-black/80"
@@ -252,7 +235,6 @@ const memberSinceLabel = currentUser.created
                                 >Sauvegarder les modifications</span
                             >
                         </button>
-
                         <p
                             data-form-message
                             class="text-center text-sm text-black/60"
@@ -260,7 +242,6 @@ const memberSinceLabel = currentUser.created
                         </p>
                     </form>
                 </section>
-
                 <section
                     class="rounded-[2rem] bg-white px-5 py-7 shadow-[0_12px_30px_rgba(0,0,0,0.07)] ring-1 ring-black/5 sm:px-8"
                 >
@@ -281,7 +262,6 @@ const memberSinceLabel = currentUser.created
                     </div>
                 </section>
             </div>
-
             <section
                 data-panel="settings"
                 class="hidden rounded-[2rem] bg-white px-5 py-7 shadow-[0_12px_30px_rgba(0,0,0,0.07)] ring-1 ring-black/5 sm:px-8"
@@ -299,7 +279,6 @@ const memberSinceLabel = currentUser.created
                     </div>
                     <h2 class="font-title text-2xl text-black">Réglages</h2>
                 </div>
-
                 <div class="mt-7 space-y-7">
                     <section>
                         <h3 class="font-title text-2xl text-[#25cfe8]">
@@ -328,7 +307,6 @@ const memberSinceLabel = currentUser.created
                                     class="h-12 w-full rounded-2xl border-0 bg-white px-4 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]"
                                 />
                             </label>
-
                             <label class="block">
                                 <span class="mb-2 block text-sm text-black"
                                     >Confirmer le mot de passe</span
@@ -341,7 +319,6 @@ const memberSinceLabel = currentUser.created
                             </label>
                         </div>
                     </section>
-
                     <section>
                         <h3 class="flex items-center gap-2 text-sm text-black">
                             <svg
@@ -367,7 +344,6 @@ const memberSinceLabel = currentUser.created
                                     class="h-12 w-full rounded-2xl border-0 bg-white px-4 shadow-[0_5px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 outline-none transition focus:ring-2 focus:ring-[#25cfe8]"
                                 />
                             </label>
-
                             <label class="block">
                                 <span class="mb-2 block text-sm text-black"
                                     >Confirmer l'adresse mail</span
@@ -380,7 +356,6 @@ const memberSinceLabel = currentUser.created
                             </label>
                         </div>
                     </section>
-
                     <section
                         class="rounded-[1.75rem] border border-red-300 bg-red-100 p-5"
                     >
@@ -401,21 +376,17 @@ const memberSinceLabel = currentUser.created
                 </div>
             </section>
         </main>
-
         <Footer />
     </div>
 </Layout>
-
 <script>
     import { pb } from "../lib/pocketbase";
-
     const formatDate = (value: string) =>
         new Intl.DateTimeFormat("fr-FR", {
             day: "numeric",
             month: "long",
             year: "numeric",
         }).format(new Date(value));
-
     document.addEventListener("DOMContentLoaded", async () => {
         const message = document.querySelector("[data-form-message]");
         const form = document.getElementById("profile-form");
@@ -425,7 +396,6 @@ const memberSinceLabel = currentUser.created
         const xpBar = document.querySelector("[data-xp-bar]");
         const memberSince = document.querySelector("[data-member-since]");
         const nameInput = document.querySelector("[data-name-input]");
-
         // Nouveaux éléments pour l'avatar
         const avatarImg = document.getElementById(
             "avatar-img",
@@ -434,19 +404,15 @@ const memberSinceLabel = currentUser.created
             "avatar-upload",
         ) as HTMLInputElement;
         const avatarBtn = document.getElementById("avatar-btn");
-
         const tabButtons = Array.from(
             document.querySelectorAll("[data-tab-button]"),
         );
         const panels = Array.from(document.querySelectorAll("[data-panel]"));
-
         pb.authStore.loadFromCookie(document.cookie);
-
         if (!pb.authStore.isValid) {
             window.location.href = "/login";
             return;
         }
-
         try {
             await pb.collection("users").authRefresh();
         } catch (error) {
@@ -454,41 +420,32 @@ const memberSinceLabel = currentUser.created
             window.location.href = "/login";
             return;
         }
-
         const user = pb.authStore.model;
-
         if (!user) {
             window.location.href = "/login";
             return;
         }
-
         // --- AFFICHAGE DE LA PHOTO DE PROFIL CÔTÉ CLIENT ---
         if (avatarImg && user.avatar) {
             avatarImg.src = pb.files.getUrl(user, user.avatar);
         }
-
         // --- LOGIQUE DE CHANGEMENT DE PHOTO ---
         if (avatarBtn && avatarUpload) {
             // Clic sur l'icône appareil photo -> ouvre le gestionnaire de fichiers
             avatarBtn.addEventListener("click", () => {
                 avatarUpload.click();
             });
-
             // Envoi du fichier lors de la sélection
             avatarUpload.addEventListener("change", async (e) => {
                 const target = e.target as HTMLInputElement;
                 if (!target.files || target.files.length === 0) return;
-
                 const file = target.files[0];
                 const formData = new FormData();
                 formData.append("avatar", file);
-
                 try {
                     // Visuel "Chargement" sur le bouton (Optionnel)
                     avatarBtn.style.opacity = "0.5";
-
                     await pb.collection("users").update(user.id, formData);
-
                     // On recharge la page pour mettre à jour la photo partout (y compris dans le Header)
                     window.location.reload();
                 } catch (error) {
@@ -500,7 +457,6 @@ const memberSinceLabel = currentUser.created
                 }
             });
         }
-
         const pseudoValue =
             user.pseudo || user.username || user.email || "Mon compte";
         const pointsTotal = Number(user.points_totaux ?? 0);
@@ -515,70 +471,56 @@ const memberSinceLabel = currentUser.created
             memberSince.textContent = `Membre depuis le ${formatDate(user.created)}`;
         if (nameInput instanceof HTMLInputElement)
             nameInput.value = pseudoValue;
-
         const setActiveTab = (tabName: string) => {
             tabButtons.forEach((button) => {
                 if (!(button instanceof HTMLButtonElement)) {
                     return;
                 }
-
                 const isActive = button.dataset.tabButton === tabName;
                 button.classList.toggle("bg-black/10", isActive);
                 button.classList.toggle("text-black", isActive);
                 button.classList.toggle("text-black/70", !isActive);
                 button.setAttribute("aria-pressed", String(isActive));
             });
-
             panels.forEach((panel) => {
                 if (!(panel instanceof HTMLElement)) {
                     return;
                 }
-
                 panel.classList.toggle(
                     "hidden",
                     panel.dataset.panel !== tabName,
                 );
             });
         };
-
         tabButtons.forEach((button) => {
             if (!(button instanceof HTMLButtonElement)) {
                 return;
             }
-
             button.addEventListener("click", () => {
                 const tabName = button.dataset.tabButton;
-
                 if (tabName) {
                     setActiveTab(tabName);
                 }
             });
         });
-
         setActiveTab("profile");
-
         if (form) {
             form.addEventListener("submit", async (event) => {
                 event.preventDefault();
-
                 if (message) {
                     message.textContent = "";
                 }
-
                 const updatedPseudo =
                     nameInput instanceof HTMLInputElement
                         ? nameInput.value.trim()
                         : pseudoValue;
-
                 try {
                     await pb.collection("users").update(user.id, {
                         pseudo: updatedPseudo,
                     });
-
                     if (message) {
                         message.textContent = "Modifications sauvegardées.";
                     }
-
                     window.location.reload();
                 } catch (error) {
                     console.error("Unable to update the profile:", error);
