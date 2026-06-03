@@ -3,7 +3,6 @@ export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import Header from "../../components/Header.astro";
-import Footer from "../../components/Footer.astro";
 import { pb } from "../../lib/pocketbase";
 import showerLeconIcon from "../../assets/img/Shower_lecon.svg";
 
@@ -236,7 +235,6 @@ const initialSign = signsData[0] || null;
         </main>
 
         <div class="mt-8 sm:mt-10">
-            <Footer logoSrc={undefined} />
         </div>
     </div>
 </Layout>

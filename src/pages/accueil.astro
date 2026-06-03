@@ -6,6 +6,8 @@ import modeLessonsIcon from "../assets/img/logo_lecon.svg";
 import modeStoriesIcon from "../assets/img/logo_aventure.svg";
 import modeArcadeIcon from "../assets/img/logo_jeux.svg";
 import modeDictionaryIcon from "../assets/img/logo_dictionnaire.svg";
+import imageCafe from "../assets/img/café.avif";
+import imageParc from "../assets/img/parc.avif";
 
 const weekDays = ["L", "M", "M", "J", "V", "S", "D"];
 const completedDays = [false, false, false, false, false, false, false];
@@ -14,29 +16,18 @@ const lessons = [
     {
         id: 1,
         title: "Chapitre 1",
-        name: "Boulangerie-Chocolat",
-        progress: 0,
-        bgColor: "bg-orange-100",
-        illustration: "🏪",
+        name: "Le parc",
+        progress: 50,
+        image: imageParc,
     },
     {
         id: 2,
         title: "Chapitre 2",
-        name: "Café & l'Horloge",
-        progress: 0,
-        bgColor: "bg-amber-100",
-        illustration: "☕",
-    },
-    {
-        id: 3,
-        title: "Chapitre 3",
-        name: "Chambre à coucher",
-        progress: 0,
-        bgColor: "bg-blue-100",
-        illustration: "🛏️",
+        name: "Le café",
+        progress: 50,
+        image: imageCafe,
     },
 ];
-
 
 const modes = [
     {
@@ -74,7 +65,6 @@ const modes = [
         <Header />
 
         <main class="flex-1 mx-auto max-w-6xl w-full px-4 py-8 sm:px-6">
-            <!-- Section Accueil & Série -->
             <section class="mb-8">
                 <h1 class="font-title text-2xl text-black mb-4 mt-4">
                     Bonjour <span id="user-name-display" class="text-blue"
@@ -127,7 +117,6 @@ const modes = [
                 </div>
             </section>
 
-            <!-- Section Leçons en cours -->
             <section class="mb-8">
                 <h2 class="font-title text-2xl text-black mb-4">
                     Leçons en cours
@@ -138,10 +127,12 @@ const modes = [
                     {
                         lessons.map((lesson) => (
                             <div class="flex-shrink-0 w-40 rounded-2xl overflow-hidden bg-white shadow-soft border border-black/5 hover:shadow-md transition-shadow flex flex-col">
-                                <div
-                                    class={`h-28 ${lesson.bgColor} flex items-center justify-center text-5xl`}
-                                >
-                                    {lesson.illustration}
+                                <div class="h-28">
+                                    <img 
+                                        src={lesson.image.src} 
+                                        alt={lesson.name} 
+                                        class="w-full h-full object-cover" 
+                                    />
                                 </div>
                                 <div class="p-4 flex-1 flex flex-col justify-between">
                                     <div>
@@ -164,7 +155,6 @@ const modes = [
                 </div>
             </section>
 
-            <!-- Section Modes d'apprentissage -->
             <section class="mb-8">
                 <h2 class="font-title text-2xl text-black mb-4">
                     Modes d'apprentissage
@@ -221,7 +211,6 @@ const modes = [
     import { actualiserStreak } from "../lib/streak.ts";
 
     document.addEventListener("DOMContentLoaded", async () => {
-        // Return early si l'utilisateur n'est pas connecté pour éviter de lancer la suite inutilement
         if (!pb.authStore.isValid || !pb.authStore.model) return;
 
         try {
