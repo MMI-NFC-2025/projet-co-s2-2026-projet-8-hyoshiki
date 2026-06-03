@@ -1,0 +1,311 @@
+---
+export const prerender = false;
+
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { pb } from "../lib/pocketbase";
+
+const baseApiUrl = "https://odysigne.carnicer.fr";
+
+const getImageUrl = (record: any, field: string): string => {
+    const image = Array.isArray(record?.[field]) ? record[field][0] : record?.[field];
+
+    if (!image) {
+        return "";
+    }
+
+    return `${baseApiUrl}/api/files/${record.collectionName}/${record.id}/${image}`;
+};
+
+type AventureRecord = {
+    id: string;
+    nom_etape?: string;
+    contest_histoire?: string;
+    context_histoire?: string;
+    ordre?: number;
+    Fond_Aventure?: string | string[];
+    collectionName?: string;
+};
+
+const authCookie = Astro.request.headers.get("cookie") ?? "";
+pb.authStore.loadFromCookie(authCookie);
+
+const currentUser = pb.authStore.model;
+
+let aventures: AventureRecord[] = [];
+let errorMessage = "";
+
+try {
+    console.log("🔍 Tentative de récupération des chapitres...");
+    
+    // Récupérer tous les chapitres
+    const allChapitres = await pb.collection("chapitres").getFullList(200, { 
+        sort: "ordre" 
+    });
+    
+    console.log("✅ Chapitres récupérés:", allChapitres.length);
+    
+    // Afficher les noms d'étapes uniques
+    const uniqueStages = [...new Set(allChapitres.map((a: any) => a.nom_etape))];
+    console.log("🎭 Étapes disponibles:", uniqueStages);
+    
+    // Filtrer pour chapitre 1
+    const chapitre1 = allChapitres.filter((a: any) => a.nom_etape === "chapitre 1");
+    console.log("📍 Dialogues chapitre 1 trouvés:", chapitre1.length);
+    
+    // Trier par ordre
+    aventures = chapitre1.sort((a: any, b: any) => (a.ordre ?? 0) - (b.ordre ?? 0));
+    
+    console.log("✅ Dialogues triés:", aventures.length);
+    aventures.forEach((a, i) => {
+        console.log(`  ${i}: ordre=${a.ordre}, texte="${a.contest_histoire?.substring(0, 40)}..."`);
+    });
+} catch (error: any) {
+    console.error("❌ Erreur:", error);
+    errorMessage = error.message || error.toString();
+    console.error("🔧 Détails:", {
+        status: error.status,
+        message: error.message,
+    });
+}
+---
+
+<Layout>
+    <Header />
+    <main class="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 py-8">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl font-bold text-slate-100 text-center mb-2">Mode Aventure</h1>
+            <p class="text-center text-slate-400 mb-8">Chapitre 1 - Découvre l'histoire</p>
+
+            {errorMessage && (
+                <div class="max-w-4xl mx-auto mb-8 p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200">
+                    <p class="font-semibold">⚠️ Erreur: {errorMessage}</p>
+                    <p class="text-sm mt-2 text-red-300">Vérifie que PocketBase est lancé et que la collection 'aventure' existe.</p>
+                </div>
+            )}
+
+            {aventures.length > 0 ? (
+                <div class="max-w-6xl mx-auto">
+                    <!-- Conteneur de l'aventure -->
+                    <div class="bg-slate-800 rounded-3xl shadow-2xl overflow-hidden border border-slate-700" id="aventure-container">
+                        <!-- Contenu des dialogues -->
+                        <div id="dialogues-wrapper">
+                            {aventures.map((aventure, index) => (
+                                <div
+                                    class="aventure-dialogue hidden transition-all duration-500"
+                                    data-index={index}
+                                >
+                                    <!-- Image de fond pour chaque dialogue -->
+                                    {aventure.Fond_Aventure && (
+                                        <div class="relative h-96 bg-slate-700 overflow-hidden">
+                                            <img
+                                                src={getImageUrl(aventure, "Fond_Aventure")}
+                                                alt="Fond aventure étape {aventure.ordre ?? index}"
+                                                class="w-full h-full object-cover"
+                                            />
+                                            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/80"></div>
+                                        </div>
+                                    )}
+
+                                    <!-- Texte du dialogue -->
+                                    <div class="p-8 md:p-12 relative">
+                                        <div class="text-center">
+                                            <div class="mb-4 text-slate-400 text-sm font-mono">
+                                                Étape {aventure.ordre ?? index} / {aventures.length}
+                                            </div>
+                                            <div class="bg-gradient-to-r from-slate-700/50 to-slate-600/50 rounded-2xl p-8 md:p-12 border border-slate-600/50 backdrop-blur-sm">
+                                                <p class="text-xl md:text-2xl leading-relaxed text-slate-100 font-medium">
+                                                    "{aventure.context_histoire || aventure.contest_histoire}"
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <!-- Barres de progression et compteur -->
+                        <div class="px-8 md:px-12 pb-8 flex flex-col items-center gap-6">
+                            <!-- Points de progression -->
+                            <div class="flex gap-2 flex-wrap justify-center" id="progress-dots">
+                                {aventures.map((_, index) => (
+                                    <button
+                                        class="w-3 h-3 rounded-full transition-all duration-300 hover:scale-125"
+                                        id={`dot-${index}`}
+                                        data-index={index}
+                                        aria-label={`Aller à l'étape ${index + 1}`}
+                                    ></button>
+                                ))}
+                            </div>
+
+                            <!-- Compteur -->
+                            <div class="text-slate-400 text-sm font-semibold">
+                                <span id="current-step">1</span> / <span id="total-steps">{aventures.length}</span>
+                            </div>
+                        </div>
+
+                        <!-- Boutons de navigation -->
+                        <div class="px-8 md:px-12 pb-8 flex justify-between items-center gap-4">
+                            <button
+                                id="prev-btn"
+                                class="px-6 py-3 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled
+                            >
+                                ← Précédent
+                            </button>
+
+                            <div class="text-center flex-1">
+                                <span id="completion-text" class="text-slate-400 text-sm"></span>
+                            </div>
+
+                            <button
+                                id="next-btn"
+                                class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Suivant →
+                            </button>
+                        </div>
+
+                        <!-- Bouton terminer -->
+                        <div class="px-8 md:px-12 pb-8 text-center">
+                            <button
+                                id="finish-btn"
+                                class="hidden px-8 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg shadow-green-600/50"
+                            >
+                                ✓ Aventure terminée !
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div class="text-center text-slate-400">
+                    <p class="text-xl">Aucune aventure trouvée.</p>
+                </div>
+            )}
+        </div>
+    </main>
+    <Footer />
+</Layout>
+
+<script>
+    let currentIndex = 0;
+    let totalDialogues = 0;
+
+    function initializeAventure() {
+        const dialogues = document.querySelectorAll(".aventure-dialogue");
+        totalDialogues = dialogues.length;
+
+        if (totalDialogues === 0) return;
+
+        // Afficher le premier dialogue
+        showDialogue(0);
+        updateButtons();
+        updateProgressDots();
+    }
+
+    function showDialogue(index: number) {
+        const dialogues = document.querySelectorAll(".aventure-dialogue");
+
+        dialogues.forEach((dialogue, i) => {
+            if (i === index) {
+                dialogue.classList.remove("hidden");
+            } else {
+                dialogue.classList.add("hidden");
+            }
+        });
+
+        // Mettre à jour l'image de fond si elle existe
+        const bgImage = document.getElementById("aventure-bg");
+        if (bgImage && index === 0) {
+            // Garder la première image pour tous les dialogues
+            // ou ajouter dynamiquement les images si elles existent pour chaque étape
+        }
+
+        currentIndex = index;
+        updateStepCounter();
+        updateCompletionText();
+        updateButtons();
+        updateProgressDots();
+
+        // Afficher le bouton terminer si c'est le dernier dialogue
+        const finishBtn = document.getElementById("finish-btn");
+        if (finishBtn) {
+            if (currentIndex === totalDialogues - 1) {
+                finishBtn.classList.remove("hidden");
+            } else {
+                finishBtn.classList.add("hidden");
+            }
+        }
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function updateButtons() {
+        const prevBtn = document.getElementById("prev-btn") as HTMLButtonElement;
+        const nextBtn = document.getElementById("next-btn") as HTMLButtonElement;
+
+        if (prevBtn) {
+            prevBtn.disabled = currentIndex === 0;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = currentIndex === totalDialogues - 1;
+        }
+    }
+
+    function updateProgressDots() {
+        document.querySelectorAll("#progress-dots button").forEach((dot, index) => {
+            if (index === currentIndex) {
+                dot.classList.add("bg-indigo-500", "scale-125");
+                dot.classList.remove("bg-slate-600", "hover:bg-slate-500");
+            } else {
+                dot.classList.remove("bg-indigo-500", "scale-125");
+                dot.classList.add("bg-slate-600", "hover:bg-slate-500");
+            }
+        });
+    }
+
+    function updateStepCounter() {
+        const currentStep = document.getElementById("current-step");
+        if (currentStep) {
+            currentStep.textContent = String(currentIndex + 1);
+        }
+    }
+
+    function updateCompletionText() {
+        const completionText = document.getElementById("completion-text");
+        if (completionText) {
+            const percent = Math.round(((currentIndex + 1) / totalDialogues) * 100);
+            completionText.textContent = `${percent}% complété`;
+        }
+    }
+
+    // Event listeners
+    document.getElementById("prev-btn")?.addEventListener("click", () => {
+        if (currentIndex > 0) {
+            showDialogue(currentIndex - 1);
+        }
+    });
+
+    document.getElementById("next-btn")?.addEventListener("click", () => {
+        if (currentIndex < totalDialogues - 1) {
+            showDialogue(currentIndex + 1);
+        }
+    });
+
+    document.querySelectorAll("#progress-dots button").forEach((dot) => {
+        dot.addEventListener("click", (e) => {
+            const index = parseInt((e.target as HTMLElement).getAttribute("data-index") ?? "0");
+            showDialogue(index);
+        });
+    });
+
+    document.getElementById("finish-btn")?.addEventListener("click", () => {
+        alert("🎉 Bravo ! Tu as complété cette aventure !");
+        // Ici on pourrait ajouter une logique pour sauvegarder la progression
+    });
+
+    // Initialiser au chargement
+    initializeAventure();
+</script>
