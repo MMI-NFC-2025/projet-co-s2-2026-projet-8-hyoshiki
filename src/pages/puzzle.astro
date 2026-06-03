@@ -7,501 +7,498 @@ import { pb } from "../lib/pocketbase";
 
 const BASE_URL = "https://odysigne.carnicer.fr";
 const FALLBACK_SVG =
-	'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50" y="50" text-anchor="middle" dy=".3em">?</text></svg>';
+    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50" y="50" text-anchor="middle" dy=".3em">?</text></svg>';
 
 let signes: any[] = [];
 
 try {
-	const records = await pb.collection("signes").getFullList(200);
+    const records = await pb.collection("signes").getFullList(200);
 
-	signes = records.map((record) => ({
-		...record,
-		imageUrl: record.image
-			? `${BASE_URL}/api/files/${record.collectionId || record.collectionName || "signes"}/${record.id}/${record.image}`
-			: FALLBACK_SVG,
-	}));
+    signes = records.map((record) => ({
+        ...record,
+        imageUrl: record.image
+            ? `${BASE_URL}/api/files/${record.collectionId || record.collectionName || "signes"}/${record.id}/${record.image}`
+            : FALLBACK_SVG,
+    }));
 } catch (error) {
-	console.error("Erreur lors de la récupération des signes:", error);
+    console.error("Erreur lors de la récupération des signes:", error);
 }
 ---
 
 <Layout
-	title="Odysignes - Puzzle"
-	description="Remets les signes dans le bon ordre pour reconstruire la phrase"
+    title="Odysignes - Puzzle"
+    description="Remets les signes dans le bon ordre pour reconstruire la phrase"
 >
-	<div class="bg-white min-h-screen flex flex-col overflow-x-hidden">
-		<Header />
+    <div class="bg-white min-h-screen flex flex-col overflow-x-hidden">
+        <Header />
 
-		<main
-			id="puzzle-main"
-			data-signes={JSON.stringify(signes)}
-			class="flex-1 mx-auto max-w-4xl w-full px-4 py-4 pt-12 md:pt-16"
-		>
-			<!-- En-tête -->
-			<div class="mb-6">
-				<a
-					href="/arcade"
-					class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-2 text-sm transition-colors"
-				>
-					<svg
-						class="w-4 h-4"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M15 19l-7-7 7-7"></path>
-					</svg>
-					Retour
-				</a>
-				<h1 class="font-title text-2xl md:text-3xl text-black">
-					Puzzle des signes
-				</h1>
-				<p class="text-gray-600 text-sm mt-1">
-					Remets les signes dans le bon ordre pour reformer la phrase.
-				</p>
-			</div>
+        <main
+            id="puzzle-main"
+            data-signes={JSON.stringify(signes)}
+            class="flex-1 mx-auto max-w-4xl w-full px-4 py-4 pt-12 md:pt-16"
+        >
+            <!-- En-tête -->
+            <div class="mb-6">
+                <a
+                    href="/arcade"
+                    class="inline-flex items-center gap-2 text-blue hover:text-blue/80 mb-2 text-sm transition-colors"
+                >
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Retour
+                </a>
+                <h1 class="font-title text-2xl md:text-3xl text-black">
+                    Puzzle des signes
+                </h1>
+                <p class="text-gray-600 text-sm mt-1">
+                    Remets les signes dans le bon ordre pour reformer la phrase.
+                </p>
+            </div>
 
-			<div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-				
-				<section
-					class="space-y-4 rounded-3xl bg-white p-5 md:p-6 shadow-soft border border-black/5 flex flex-col justify-between"
-				>
-					<div
-						class="rounded-2xl bg-blue/10 px-5 py-4 border border-blue/20"
-					>
-						<p
-							class="text-xs font-bold uppercase tracking-widest text-blue mb-1"
-						>
-							Phrase à reconstruire
-						</p>
-						<p
-							id="phraseText"
-							class="font-body text-xl md:text-2xl leading-tight text-black font-medium"
-							aria-live="polite"
-						>
-							Chargement...
-						</p>
-					</div>
+            <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                
+                <section
+                    class="space-y-4 rounded-3xl bg-white p-5 md:p-6 shadow-soft border border-black/5 flex flex-col justify-between"
+                >
+                    <div
+                        class="rounded-2xl bg-blue/10 px-5 py-4 border border-blue/20"
+                    >
+                        <p
+                            class="text-xs font-bold uppercase tracking-widest text-blue mb-1"
+                        >
+                            Phrase à reconstruire
+                        </p>
+                        <p
+                            id="phraseText"
+                            class="font-body text-xl md:text-2xl leading-tight text-black font-medium"
+                            aria-live="polite"
+                        >
+                            Chargement...
+                        </p>
+                    </div>
 
-					<div>
-						<div
-							class="mb-3 flex items-center justify-between text-xs font-bold uppercase tracking-widest text-black/40"
-						>
-							<span>Ordre 1</span>
-							<span>Ordre 4</span>
-						</div>
-						<div
-							id="slotBoard"
-							class="grid grid-cols-2 gap-3 md:grid-cols-4"
-						>
-							
-						</div>
-					</div>
-				</section>
+                    <div>
+                        <div
+                            class="mb-3 flex items-center justify-between text-xs font-bold uppercase tracking-widest text-black/40"
+                        >
+                            <span>Ordre 1</span>
+                            <span>Ordre 4</span>
+                        </div>
+                        <div
+                            id="slotBoard"
+                            class="grid grid-cols-2 gap-3 md:grid-cols-4"
+                        >
+                            
+                        </div>
+                    </div>
+                </section>
 
-				
-				<section
-					class="space-y-5 rounded-3xl bg-white p-5 md:p-6 shadow-soft border border-black/5 flex flex-col justify-between"
-				>
-					<div>
-						<p
-							class="text-xs font-bold uppercase tracking-widest text-black/40"
-						>
-							Signes disponibles
-						</p>
-						<p class="mt-1 text-sm text-gray-600">
-							Clique ou glisse les cartes dans le bon ordre.
-						</p>
-					</div>
+                
+                <section
+                    class="space-y-5 rounded-3xl bg-white p-5 md:p-6 shadow-soft border border-black/5 flex flex-col justify-between"
+                >
+                    <div>
+                        <p
+                            class="text-xs font-bold uppercase tracking-widest text-black/40"
+                        >
+                            Signes disponibles
+                        </p>
+                        <p class="mt-1 text-sm text-gray-600">
+                            Clique ou glisse les cartes dans le bon ordre.
+                        </p>
+                    </div>
 
-					<div id="bankBoard" class="grid grid-cols-2 gap-3">
-						
-					</div>
+                    <div id="bankBoard" class="grid grid-cols-2 gap-3">
+                        
+                    </div>
 
-					<button
-						id="validateBtn"
-						class="w-full rounded-2xl bg-blue px-6 py-3.5 text-lg font-bold text-white shadow-md transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-					>
-						Valider
-					</button>
+                    <button
+                        id="validateBtn"
+                        class="w-full rounded-2xl bg-blue px-6 py-3.5 text-lg font-bold text-white shadow-md transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Valider
+                    </button>
 
-					<div
-						id="feedback"
-						class="min-h-[3rem] rounded-xl flex items-center justify-center px-4 text-center text-sm font-semibold opacity-0 transition-opacity"
-						aria-live="polite"
-					>
-					</div>
-				</section>
-			</div>
-		</main>
-	</div>
+                    <div
+                        id="feedback"
+                        class="min-h-[3rem] rounded-xl flex items-center justify-center px-4 text-center text-sm font-semibold opacity-0 transition-opacity"
+                        aria-live="polite"
+                    >
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
 </Layout>
 
 <script>
-	import { attribuerXP } from "../lib/xp";
+    import { attribuerXP } from "../lib/xp";
 
-	const initPuzzle = () => {
-		const mainEl = document.getElementById("puzzle-main");
-		if (!mainEl) return;
+    const initPuzzle = () => {
+        const mainEl = document.getElementById("puzzle-main");
+        if (!mainEl) return;
 
-		const signes = JSON.parse(mainEl.dataset.signes || "[]");
-		const PUZZLE_SIZE = 4;
+        const signes = JSON.parse(mainEl.dataset.signes || "[]");
+        const PUZZLE_SIZE = 4;
 
-		const phraseText = document.getElementById("phraseText");
-		const slotBoard = document.getElementById("slotBoard");
-		const bankBoard = document.getElementById("bankBoard");
-		const validateBtn = document.getElementById(
-			"validateBtn",
-		) as HTMLButtonElement;
-		const feedback = document.getElementById("feedback");
+        const phraseText = document.getElementById("phraseText");
+        const slotBoard = document.getElementById("slotBoard");
+        const bankBoard = document.getElementById("bankBoard");
+        const validateBtn = document.getElementById(
+            "validateBtn",
+        ) as HTMLButtonElement;
+        const feedback = document.getElementById("feedback");
 
-		if (
-			!phraseText ||
-			!slotBoard ||
-			!bankBoard ||
-			!validateBtn ||
-			!feedback
-		)
-			return;
+        if (
+            !phraseText ||
+            !slotBoard ||
+            !bankBoard ||
+            !validateBtn ||
+            !feedback
+        )
+            return;
 
-		let correctOrder: any[] = [];
-		let bankOrder: any[] = [];
-		let selectedCardId: string | null = null;
-		let isLocked = false;
-		let placedBySlot: (string | null)[] = new Array(PUZZLE_SIZE).fill(null);
-		let cardSlotById = new Map();
-		let slotElements: HTMLElement[] = [];
-		let bankCardById = new Map();
-		let solvedTimeout: number | null = null;
-		let puzzleErrors = 0;
+        let correctOrder: any[] = [];
+        let bankOrder: any[] = [];
+        let selectedCardId: string | null = null;
+        let isLocked = false;
+        let placedBySlot: (string | null)[] = new Array(PUZZLE_SIZE).fill(null);
+        let cardSlotById = new Map();
+        let slotElements: HTMLElement[] = [];
+        let bankCardById = new Map();
+        let solvedTimeout: number | null = null;
+        let puzzleErrors = 0;
 
-		const shuffle = (array: any[]) =>
-			[...array].sort(() => Math.random() - 0.5);
+        const shuffle = (array: any[]) =>
+            [...array].sort(() => Math.random() - 0.5);
 
-		function formatSignText(signs: any[]) {
-			if (signs.length === 0) return "";
-			if (signs.length === 1) return signs[0].nom_signe || "";
-			if (signs.length === 2)
-				return `${signs[0].nom_signe} et ${signs[1].nom_signe}`;
-			const parts = signs.map((sign) => sign.nom_signe || "");
-			return `${parts.slice(0, -1).join(", ")}, et ${parts.at(-1)}`;
-		}
+        function formatSignText(signs: any[]) {
+            if (signs.length === 0) return "";
+            if (signs.length === 1) return signs[0].nom_signe || "";
+            if (signs.length === 2)
+                return `${signs[0].nom_signe} et ${signs[1].nom_signe}`;
+            const parts = signs.map((sign) => sign.nom_signe || "");
+            return `${parts.slice(0, -1).join(", ")}, et ${parts.at(-1)}`;
+        }
 
-		function buildSentence(signs: any[]) {
-			const sentenceTemplates = [
-				(words: string) => `Je retiens ${words}.`,
-				(words: string) => `Aujourd'hui, je choisis ${words}.`,
-				(words: string) => `Pour apprendre, je répète ${words}.`,
-				(words: string) => `Dans le bon ordre, on lit ${words}.`,
-			];
-			const template =
-				sentenceTemplates[
-					Math.floor(Math.random() * sentenceTemplates.length)
-				];
-			return template(formatSignText(signs));
-		}
+        function buildSentence(signs: any[]) {
+            const sentenceTemplates = [
+                (words: string) => `Je retiens ${words}.`,
+                (words: string) => `Aujourd'hui, je choisis ${words}.`,
+                (words: string) => `Pour apprendre, je répète ${words}.`,
+                (words: string) => `Dans le bon ordre, on lit ${words}.`,
+            ];
+            const template =
+                sentenceTemplates[
+                    Math.floor(Math.random() * sentenceTemplates.length)
+                ];
+            return template(formatSignText(signs));
+        }
 
-		function clearFeedback() {
-			if (!feedback) return;
-			feedback.textContent = "";
-			feedback.className =
-				"min-h-[3rem] rounded-xl flex items-center justify-center px-4 text-center font-semibold opacity-0 transition-opacity";
-		}
+        function clearFeedback() {
+            if (!feedback) return;
+            feedback.textContent = "";
+            feedback.className =
+                "min-h-[3rem] rounded-xl flex items-center justify-center px-4 text-center font-semibold opacity-0 transition-opacity";
+        }
 
-		function setFeedback(
-			message: string,
-			variant: "success" | "error" | "neutral",
-		) {
-			if (!feedback) return;
-			const variantClasses = {
-				success: "bg-emerald-100 text-emerald-700 opacity-100",
-				error: "bg-red-100 text-red-700 opacity-100",
-				neutral: "bg-blue/10 text-blue opacity-100",
-			}[variant];
+        function setFeedback(
+            message: string,
+            variant: "success" | "error" | "neutral",
+        ) {
+            if (!feedback) return;
+            const variantClasses = {
+                success: "bg-emerald-100 text-emerald-700 opacity-100",
+                error: "bg-red-100 text-red-700 opacity-100",
+                neutral: "bg-blue/10 text-blue opacity-100",
+            }[variant];
 
-			feedback.textContent = message;
-			feedback.className = `min-h-[3rem] mt-2 rounded-xl flex items-center justify-center px-4 text-center font-semibold transition-opacity ${variantClasses}`;
-		}
+            feedback.textContent = message;
+            feedback.className = `min-h-[3rem] mt-2 rounded-xl flex items-center justify-center px-4 text-center font-semibold transition-opacity ${variantClasses}`;
+        }
 
-		function updateSelectionState() {
-			bankCardById.forEach((card, cardId) => {
-				const isSelected = cardId === selectedCardId;
-				card.classList.toggle("ring-4", isSelected);
-				card.classList.toggle("ring-blue", isSelected);
-				card.classList.toggle("scale-105", isSelected);
-			});
-		}
+        function updateSelectionState() {
+            bankCardById.forEach((card, cardId) => {
+                const isSelected = cardId === selectedCardId;
+                card.classList.toggle("ring-4", isSelected);
+                card.classList.toggle("ring-blue", isSelected);
+                card.classList.toggle("scale-105", isSelected);
+            });
+        }
 
-		
-		function getCardInnerHtml(sign: any) {
-			return `
-        <div class="flex w-full flex-1 items-center justify-center rounded-xl bg-gray-50 p-2 overflow-hidden mb-2 pointer-events-none">
-            <img src="${sign.imageUrl}" alt="${sign.nom_signe}" class="max-h-16 w-full object-contain" draggable="false" />
-        </div>
-        <span class="text-xs font-semibold text-black leading-tight pointer-events-none">${sign.nom_signe}</span>
-      `;
-		}
+        // Fonction corrigée pour ne pas afficher le texte
+        function getCardInnerHtml(sign: any) {
+            return `
+                <div class="flex w-full flex-1 items-center justify-center rounded-xl bg-gray-50 p-2 overflow-hidden pointer-events-none">
+                    <img src="${sign.imageUrl}" alt="${sign.nom_signe}" class="max-h-24 w-full object-contain" draggable="false" />
+                </div>
+            `;
+        }
 
-		function renderBankCard(sign: any) {
-			const card = document.createElement("button");
-			card.type = "button";
-			card.draggable = true;
-			card.dataset.cardId = sign.id;
+        function renderBankCard(sign: any) {
+            const card = document.createElement("button");
+            card.type = "button";
+            card.draggable = true;
+            card.dataset.cardId = sign.id;
 
-			card.className =
-				"puzzle-card flex min-h-[8rem] w-full flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-2 text-center transition-all hover:-translate-y-1 hover:border-blue hover:shadow-md cursor-grab active:cursor-grabbing";
-			card.innerHTML = getCardInnerHtml(sign);
+            card.className =
+                "puzzle-card flex min-h-[8rem] w-full flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-2 text-center transition-all hover:-translate-y-1 hover:border-blue hover:shadow-md cursor-grab active:cursor-grabbing";
+            card.innerHTML = getCardInnerHtml(sign);
 
-			card.addEventListener("click", () => {
-				if (isLocked) return;
-				selectedCardId = selectedCardId === sign.id ? null : sign.id;
-				updateSelectionState();
-			});
+            card.addEventListener("click", () => {
+                if (isLocked) return;
+                selectedCardId = selectedCardId === sign.id ? null : sign.id;
+                updateSelectionState();
+            });
 
-			card.addEventListener("dragstart", (e) => {
-				if (isLocked) return;
-				selectedCardId = sign.id;
-				updateSelectionState();
-				e.dataTransfer?.setData("text/plain", sign.id);
-				e.dataTransfer?.setDragImage(card, 40, 40);
-			});
+            card.addEventListener("dragstart", (e) => {
+                if (isLocked) return;
+                selectedCardId = sign.id;
+                updateSelectionState();
+                e.dataTransfer?.setData("text/plain", sign.id);
+                e.dataTransfer?.setDragImage(card, 40, 40);
+            });
 
-			return card;
-		}
+            return card;
+        }
 
-		function renderSlotPlaceholder(index: number) {
-			return `
-        <div class="flex h-full w-full min-h-[8rem] flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50/50 text-gray-400 transition-colors pointer-events-none">
-          <span class="text-[10px] font-bold uppercase tracking-widest">Place</span>
-          <span class="mt-1 text-3xl font-bold">${index + 1}</span>
-        </div>
-      `;
-		}
+        function renderSlotPlaceholder(index: number) {
+            return `
+                <div class="flex h-full w-full min-h-[8rem] flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50/50 text-gray-400 transition-colors pointer-events-none">
+                    <span class="text-[10px] font-bold uppercase tracking-widest">Place</span>
+                    <span class="mt-1 text-3xl font-bold">${index + 1}</span>
+                </div>
+            `;
+        }
 
-		function createSlot(index: number) {
-			const slot = document.createElement("button");
-			slot.type = "button";
-			slot.dataset.slotIndex = index.toString();
-			slot.className =
-				"puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all p-0 overflow-hidden";
-			slot.innerHTML = renderSlotPlaceholder(index);
+        function createSlot(index: number) {
+            const slot = document.createElement("button");
+            slot.type = "button";
+            slot.dataset.slotIndex = index.toString();
+            slot.className =
+                "puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all p-0 overflow-hidden";
+            slot.innerHTML = renderSlotPlaceholder(index);
 
-			slot.addEventListener("click", () => {
-				if (isLocked) return;
-				const currentCardId = placedBySlot[index];
+            slot.addEventListener("click", () => {
+                if (isLocked) return;
+                const currentCardId = placedBySlot[index];
 
-				if (selectedCardId) {
-					placeCard(selectedCardId, index);
-					selectedCardId = null;
-					updateSelectionState();
-					return;
-				}
+                if (selectedCardId) {
+                    placeCard(selectedCardId, index);
+                    selectedCardId = null;
+                    updateSelectionState();
+                    return;
+                }
 
-				if (currentCardId) removeCardFromSlot(index);
-			});
+                if (currentCardId) removeCardFromSlot(index);
+            });
 
-			slot.addEventListener("dragover", (e) => {
-				if (isLocked) return;
-				e.preventDefault();
-				slot.classList.add("scale-105", "opacity-80");
-			});
+            slot.addEventListener("dragover", (e) => {
+                if (isLocked) return;
+                e.preventDefault();
+                slot.classList.add("scale-105", "opacity-80");
+            });
 
-			slot.addEventListener("dragleave", () => {
-				slot.classList.remove("scale-105", "opacity-80");
-			});
+            slot.addEventListener("dragleave", () => {
+                slot.classList.remove("scale-105", "opacity-80");
+            });
 
-			slot.addEventListener("drop", (e) => {
-				if (isLocked) return;
-				e.preventDefault();
-				slot.classList.remove("scale-105", "opacity-80");
-				const draggedId = e.dataTransfer?.getData("text/plain");
+            slot.addEventListener("drop", (e) => {
+                if (isLocked) return;
+                e.preventDefault();
+                slot.classList.remove("scale-105", "opacity-80");
+                const draggedId = e.dataTransfer?.getData("text/plain");
 
-				if (draggedId) {
-					placeCard(draggedId, index);
-					selectedCardId = null;
-					updateSelectionState();
-				}
-			});
+                if (draggedId) {
+                    placeCard(draggedId, index);
+                    selectedCardId = null;
+                    updateSelectionState();
+                }
+            });
 
-			return slot;
-		}
+            return slot;
+        }
 
-		function removeCardFromSlot(slotIndex: number) {
-			const cardId = placedBySlot[slotIndex];
-			if (!cardId) return;
+        function removeCardFromSlot(slotIndex: number) {
+            const cardId = placedBySlot[slotIndex];
+            if (!cardId) return;
 
-			placedBySlot[slotIndex] = null;
-			cardSlotById.delete(cardId);
+            placedBySlot[slotIndex] = null;
+            cardSlotById.delete(cardId);
 
-			const slot = slotElements[slotIndex];
-			if (slot) {
-				slot.innerHTML = renderSlotPlaceholder(slotIndex);
-				slot.className =
-					"puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all p-0 overflow-hidden";
-			}
+            const slot = slotElements[slotIndex];
+            if (slot) {
+                slot.innerHTML = renderSlotPlaceholder(slotIndex);
+                slot.className =
+                    "puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all p-0 overflow-hidden";
+            }
 
-			const bankCard = bankCardById.get(cardId);
-			if (bankCard) {
-				bankCard.classList.remove(
-					"hidden",
-					"opacity-0",
-					"pointer-events-none",
-				);
-				bankCard.classList.add("flex");
-			}
+            const bankCard = bankCardById.get(cardId);
+            if (bankCard) {
+                bankCard.classList.remove(
+                    "hidden",
+                    "opacity-0",
+                    "pointer-events-none",
+                );
+                bankCard.classList.add("flex");
+            }
 
-			validateBtn.disabled = false;
-			clearFeedback();
-		}
+            validateBtn.disabled = false;
+            clearFeedback();
+        }
 
-		function placeCard(cardId: string, slotIndex: number) {
-			if (isLocked) return;
+        function placeCard(cardId: string, slotIndex: number) {
+            if (isLocked) return;
 
-			const sign =
-				correctOrder.find((item) => item.id === cardId) ||
-				bankOrder.find((item) => item.id === cardId);
-			if (!sign) return;
+            const sign =
+                correctOrder.find((item) => item.id === cardId) ||
+                bankOrder.find((item) => item.id === cardId);
+            if (!sign) return;
 
-			const currentSlotIndex = cardSlotById.get(cardId);
-			if (currentSlotIndex === slotIndex) return;
+            const currentSlotIndex = cardSlotById.get(cardId);
+            if (currentSlotIndex === slotIndex) return;
 
-			if (currentSlotIndex !== undefined) {
-				removeCardFromSlot(currentSlotIndex);
-			}
+            if (currentSlotIndex !== undefined) {
+                removeCardFromSlot(currentSlotIndex);
+            }
 
-			const occupantId = placedBySlot[slotIndex];
-			if (occupantId && occupantId !== cardId) {
-				removeCardFromSlot(slotIndex);
-			}
+            const occupantId = placedBySlot[slotIndex];
+            if (occupantId && occupantId !== cardId) {
+                removeCardFromSlot(slotIndex);
+            }
 
-			placedBySlot[slotIndex] = cardId;
-			cardSlotById.set(cardId, slotIndex);
+            placedBySlot[slotIndex] = cardId;
+            cardSlotById.set(cardId, slotIndex);
 
-			const slot = slotElements[slotIndex];
-			if (slot) {
-				
-				slot.innerHTML = `<div class="flex h-full w-full flex-col items-center justify-center p-2 text-center pointer-events-none">${getCardInnerHtml(sign)}</div>`;
-				slot.className =
-					"puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all shadow-sm ring-2 ring-blue bg-white p-0 overflow-hidden";
-			}
+            const slot = slotElements[slotIndex];
+            if (slot) {
+                slot.innerHTML = `<div class="flex h-full w-full flex-col items-center justify-center p-2 text-center pointer-events-none">${getCardInnerHtml(sign)}</div>`;
+                slot.className =
+                    "puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all shadow-sm ring-2 ring-blue bg-white p-0 overflow-hidden";
+            }
 
-			const bankCard = bankCardById.get(cardId);
-			if (bankCard) {
-				bankCard.classList.add(
-					"hidden",
-					"opacity-0",
-					"pointer-events-none",
-				);
-				bankCard.classList.remove("flex");
-			}
+            const bankCard = bankCardById.get(cardId);
+            if (bankCard) {
+                bankCard.classList.add(
+                    "hidden",
+                    "opacity-0",
+                    "pointer-events-none",
+                );
+                bankCard.classList.remove("flex");
+            }
 
-			clearFeedback();
-		}
+            clearFeedback();
+        }
 
-		async function evaluatePuzzle() {
-			if (placedBySlot.some((cardId) => !cardId)) {
-				setFeedback("Place les 4 signes avant de valider.", "neutral");
-				return;
-			}
+        async function evaluatePuzzle() {
+            if (placedBySlot.some((cardId) => !cardId)) {
+                setFeedback("Place les 4 signes avant de valider.", "neutral");
+                return;
+            }
 
-			const isCorrect = placedBySlot.every(
-				(cardId, index) => cardId === correctOrder[index].id,
-			);
+            const isCorrect = placedBySlot.every(
+                (cardId, index) => cardId === correctOrder[index].id,
+            );
 
-			slotElements.forEach((slot, index) => {
-				const correct = placedBySlot[index] === correctOrder[index].id;
-				slot.className = `puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all shadow-sm ring-4 bg-white p-0 overflow-hidden ${correct ? "ring-emerald-500" : "ring-red-400"}`;
-			});
+            slotElements.forEach((slot, index) => {
+                const correct = placedBySlot[index] === correctOrder[index].id;
+                slot.className = `puzzle-slot group h-full w-full min-h-[8rem] rounded-xl transition-all shadow-sm ring-4 bg-white p-0 overflow-hidden ${correct ? "ring-emerald-500" : "ring-red-400"}`;
+            });
 
-			if (isCorrect) {
-				isLocked = true;
-				validateBtn.disabled = true;
+            if (isCorrect) {
+                isLocked = true;
+                validateBtn.disabled = true;
 
-				const maxPoints = 4;
-				const pointsObtenus = Math.max(1, 4 - puzzleErrors);
-				const xpGagnee = await attribuerXP(pointsObtenus, maxPoints);
+                const maxPoints = 4;
+                const pointsObtenus = Math.max(1, 4 - puzzleErrors);
+                const xpGagnee = await attribuerXP(pointsObtenus, maxPoints);
 
-				setFeedback(`Bravo ! (+ ${xpGagnee} XP)`, "success");
+                setFeedback(`Bravo ! (+ ${xpGagnee} XP)`, "success");
 
-				if (solvedTimeout) window.clearTimeout(solvedTimeout);
-				solvedTimeout = window.setTimeout(buildPuzzle, 2000);
-				return;
-			}
+                if (solvedTimeout) window.clearTimeout(solvedTimeout);
+                solvedTimeout = window.setTimeout(buildPuzzle, 2000);
+                return;
+            }
 
-			puzzleErrors++;
-			setFeedback(
-				"Ce n'est pas le bon ordre. Clique sur une carte pour l'enlever.",
-				"error",
-			);
-		}
+            puzzleErrors++;
+            setFeedback(
+                "Ce n'est pas le bon ordre. Clique sur une carte pour l'enlever.",
+                "error",
+            );
+        }
 
-		function buildPuzzle() {
-			
-			const validSigns = signes.filter(
-				(signe: any) => signe.nom_signe && signe.image,
-			);
+        function buildPuzzle() {
+            const validSigns = signes.filter(
+                (signe: any) => signe.nom_signe && signe.image,
+            );
 
-			if (!phraseText || !slotBoard || !bankBoard) return;
+            if (!phraseText || !slotBoard || !bankBoard) return;
 
-			if (validSigns.length < PUZZLE_SIZE) {
-				phraseText.textContent =
-					"Pas assez de signes disponibles pour créer un puzzle.";
-				validateBtn.disabled = true;
-				setFeedback(
-					"Ajoute au moins 4 signes avec une image dans la base de données.",
-					"error",
-				);
-				return;
-			}
+            if (validSigns.length < PUZZLE_SIZE) {
+                phraseText.textContent =
+                    "Pas assez de signes disponibles pour créer un puzzle.";
+                validateBtn.disabled = true;
+                setFeedback(
+                    "Ajoute au moins 4 signes avec une image dans la base de données.",
+                    "error",
+                );
+                return;
+            }
 
-			if (solvedTimeout) {
-				window.clearTimeout(solvedTimeout);
-				solvedTimeout = null;
-			}
+            if (solvedTimeout) {
+                window.clearTimeout(solvedTimeout);
+                solvedTimeout = null;
+            }
 
-			correctOrder = shuffle(validSigns).slice(0, PUZZLE_SIZE);
-			bankOrder = shuffle(correctOrder);
-			placedBySlot = new Array(PUZZLE_SIZE).fill(null);
-			cardSlotById = new Map();
-			selectedCardId = null;
-			isLocked = false;
-			validateBtn.disabled = false;
-			puzzleErrors = 0;
+            correctOrder = shuffle(validSigns).slice(0, PUZZLE_SIZE);
+            bankOrder = shuffle(correctOrder);
+            placedBySlot = new Array(PUZZLE_SIZE).fill(null);
+            cardSlotById = new Map();
+            selectedCardId = null;
+            isLocked = false;
+            validateBtn.disabled = false;
+            puzzleErrors = 0;
 
-			phraseText.textContent = buildSentence(correctOrder);
-			clearFeedback();
+            phraseText.textContent = buildSentence(correctOrder);
+            clearFeedback();
 
-			slotBoard.innerHTML = "";
-			slotElements = correctOrder.map((_, index) => {
-				const slot = createSlot(index);
-				slotBoard.appendChild(slot);
-				return slot;
-			});
+            slotBoard.innerHTML = "";
+            slotElements = correctOrder.map((_, index) => {
+                const slot = createSlot(index);
+                slotBoard.appendChild(slot);
+                return slot;
+            });
 
-			bankBoard.innerHTML = "";
-			bankCardById = new Map();
-			bankOrder.forEach((sign, index) => {
-				const card = renderBankCard(sign);
-				card.dataset.cardIndex = index.toString();
-				bankCardById.set(sign.id, card);
-				bankBoard.appendChild(card);
-			});
+            bankBoard.innerHTML = "";
+            bankCardById = new Map();
+            bankOrder.forEach((sign, index) => {
+                const card = renderBankCard(sign);
+                card.dataset.cardIndex = index.toString();
+                bankCardById.set(sign.id, card);
+                bankBoard.appendChild(card);
+            });
 
-			updateSelectionState();
-		}
+            updateSelectionState();
+        }
 
-		validateBtn.addEventListener("click", evaluatePuzzle);
-		buildPuzzle();
-	};
+        validateBtn.addEventListener("click", evaluatePuzzle);
+        buildPuzzle();
+    };
 
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", initPuzzle);
-	} else {
-		initPuzzle();
-	}
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPuzzle);
+    } else {
+        initPuzzle();
+    }
 </script>
