@@ -7,10 +7,10 @@
 - [ ] URL de la landing page :
 - [ ] URL de l'application finale :
 - [ ] URL de connexion au back office : https://odysigne.carnicer.fr/_/
-- [ ] Identifiant de connexion au backoffice : 
-- [ ] Mot de passe de connexion au backoffice :
+- [ ] Identifiant de connexion au backoffice : Prof@mail.fr
+- [ ] Mot de passe de connexion au backoffice : MMI_2026
 - [ ] URL de la maquette FIGMA : https://www.figma.com/design/Sr0OontsS9npi76QiHwz9Z/Gestion-de-Projet-S2?node-id=11-3&t=BLOeNH895GvZv0S9-1 
-- [ ] Description du projet :
+- [ ] Description du projet : WEB app pour l'apprentissage de la Langue des signes française
 
 ## 🚀 Équipe
 
