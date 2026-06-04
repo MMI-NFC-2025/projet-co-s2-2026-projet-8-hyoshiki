@@ -4,8 +4,8 @@
 Éléménts à renseigner pour la soutenance :
 
 - [ ] Nom du projet : Odysignes
-- [ ] URL de la landing page :
-- [ ] URL de l'application finale :
+- [ ] URL de la landing page : https://odysignes.carnicer.fr/
+- [ ] URL de l'application finale : https://odysignes.carnicer.fr/accueil
 - [ ] URL de connexion au back office : https://odysigne.carnicer.fr/_/
 - [ ] Identifiant de connexion au backoffice : Prof@mail.fr
 - [ ] Mot de passe de connexion au backoffice : MMI_2026
@@ -16,7 +16,7 @@
 
 | Étudiants    | Prénom NOM  |
 | :----------- | :---------- |
-| Étudiant 1   | Matias Verguet
+| Étudiant 1   | Matias Verguet |
 | Étudiant 2   | Konstance Kruger |
 | Étudiant 3   | Matthis Carnicer |
 
