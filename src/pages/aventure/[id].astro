@@ -6,9 +6,21 @@ import { pb } from "../../lib/pocketbase";
 const { id } = Astro.params;
 const baseApiUrl = "https://odysigne.carnicer.fr";
 
-let signes = await pb.collection("signes").getFullList({ sort: "@random" });
-const signeBonjour = signes.find(s => s.nom_signe?.toLowerCase() === "bonjour");
-const signeAutre = signes.find(s => s.nom_signe?.toLowerCase() !== "bonjour");
+// CORRECTION ICI : Ajout de ": any[]" pour calmer TypeScript
+let signes: any[] = [];
+try {
+    signes = await pb.collection("signes").getFullList({ sort: "@random" });
+} catch (e) {
+    console.error("Erreur de récupération des signes:", e);
+}
+
+// CORRECTION ICI : Ajout de "(s: any)"
+const signeBonjour = signes.find(
+    (s: any) => s.nom_signe?.toLowerCase() === "bonjour",
+);
+const signeAutre = signes.find(
+    (s: any) => s.nom_signe?.toLowerCase() !== "bonjour",
+);
 
 interface AventureRecord {
     id: string;
@@ -22,7 +34,9 @@ interface AventureRecord {
 let aventures: AventureRecord[] = [];
 
 try {
-    const allChapitres = await pb.collection("chapitres").getFullList<AventureRecord>({ sort: "ordre" });
+    const allChapitres = await pb
+        .collection("chapitres")
+        .getFullList<AventureRecord>({ sort: "ordre" });
     aventures = allChapitres
         .filter((a) => a.nom_etape?.toLowerCase().includes(`chapitre ${id}`))
         .sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
@@ -32,110 +46,223 @@ try {
 ---
 
 <Layout>
-    <main class="bg-white flex flex-col items-center w-full min-h-screen">
-        <div class="w-full max-w-md flex flex-col relative bg-white border-x border-slate-100 min-h-screen">
+    <main class="bg-slate-50 flex flex-col items-center w-full min-h-screen">
+        <div
+            class="w-full max-w-md flex flex-col relative bg-white shadow-xl min-h-screen overflow-hidden"
+        >
+            <div class="absolute top-4 left-4 z-50">
+                <a
+                    href="/aventure"
+                    class="inline-block bg-blue px-6 py-2 text-white font-bold rounded-2xl transition-transform hover:scale-105 active:scale-95 shadow-lg"
+                >
+                    Retour
+                </a>
+            </div>
+
             <div class="flex-1 w-full flex flex-col" id="dialogues-wrapper">
-                {aventures.length > 0 ? (
-                    aventures.map((aventure, index) => (
-                        <div class="aventure-dialogue transition-all duration-500 hidden flex-col flex-1 relative" data-index={index}>
-                            {aventure.Fond_Aventure && (
-                                <div class="w-full h-[50vh] overflow-hidden bg-white relative">
-                                    <img 
-                                        src={`${baseApiUrl}/api/files/${aventure.collectionName}/${aventure.id}/${aventure.Fond_Aventure}`} 
-                                        class="w-full h-full object-cover object-top" 
-                                        alt="Fond aventure" 
-                                    />
-                                    {index === 12 && (
-                                        <div class="absolute top-10 left-4 w-1/2 z-10">
-                                            <div class="bg-white p-4 rounded-3xl shadow-lg border-2 border-cyan-400">
-                                                <p class="font-bold text-sm text-slate-800 leading-snug">"{aventure.context_histoire}"</p>
+                {
+                    aventures.length > 0 ? (
+                        aventures.map((aventure, index) => (
+                            <div
+                                class="aventure-dialogue transition-opacity duration-300 hidden flex-col flex-1 relative"
+                                data-index={index}
+                            >
+                                {aventure.Fond_Aventure && (
+                                    <div class="w-full h-[70vh] bg-slate-200 relative overflow-hidden shrink-0">
+                                        <img
+                                            src={`${baseApiUrl}/api/files/${aventure.collectionName}/${aventure.id}/${aventure.Fond_Aventure}`}
+                                            class="w-full h-full object-cover object-center"
+                                            alt="Décor de l'aventure"
+                                        />
+
+                                        {index === 12 && (
+                                            <div class="absolute bottom-4 left-4 z-10 max-w-[80%]">
+                                                <div class="bg-white/95 backdrop-blur-sm p-4 rounded-3xl shadow-lg border-2 border-cyan-400">
+                                                    <p class="font-bold text-sm text-slate-800 leading-snug">
+                                                        "
+                                                        {
+                                                            aventure.context_histoire
+                                                        }
+                                                        "
+                                                    </p>
+                                                </div>
                                             </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div class="flex-1 flex flex-col bg-white z-20 -mt-6 rounded-t-3xl relative">
+                                    {index === 12 ? (
+                                        <div class="p-6 grid grid-cols-2 gap-4 my-auto">
+                                            <button
+                                                type="button"
+                                                id="btn-correct"
+                                                class="border-4 border-slate-200 rounded-3xl p-2 overflow-hidden shadow-sm hover:scale-105 active:scale-95 transition-all bg-white"
+                                            >
+                                                <img
+                                                    src={`${baseApiUrl}/api/files/signes/${signeBonjour?.id}/${signeBonjour?.image}`}
+                                                    class="w-full h-32 object-contain"
+                                                    alt="Signe correct"
+                                                />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                id="btn-wrong"
+                                                class="border-4 border-slate-200 rounded-3xl p-2 overflow-hidden shadow-sm hover:scale-105 active:scale-95 transition-all bg-white"
+                                            >
+                                                <img
+                                                    src={`${baseApiUrl}/api/files/signes/${signeAutre?.id}/${signeAutre?.image}`}
+                                                    class="w-full h-32 object-contain"
+                                                    alt="Signe incorrect"
+                                                />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div class="px-6 py-8 flex-1 flex items-center">
+                                            <p class="font-medium text-xl md:text-2xl leading-snug text-black">
+                                                "{aventure.context_histoire}"
+                                            </p>
                                         </div>
                                     )}
                                 </div>
-                            )}
-
-                            {index === 12 ? (
-                                <div class="p-6 grid grid-cols-2 gap-4">
-                                    <button id="btn-correct" class="border-4 border-slate-200 rounded-3xl p-2 overflow-hidden shadow-sm transition-all">
-                                        <img src={baseApiUrl + "/api/files/signes/" + signeBonjour?.id + "/" + signeBonjour?.image} class="w-full h-32 object-contain" />
-                                    </button>
-                                    <button id="btn-wrong" class="border-4 border-slate-200 rounded-3xl p-2 overflow-hidden shadow-sm transition-all">
-                                        <img src={baseApiUrl + "/api/files/signes/" + signeAutre?.id + "/" + signeAutre?.image} class="w-full h-32 object-contain" />
-                                    </button>
-                                </div>
-                            ) : (
-                                <div class="p-6 flex-1 flex flex-col justify-center">
-                                    <div class="bg-cyan-400 p-6 rounded-3xl text-white shadow-lg">
-                                        <p class="font-bold text-lg leading-relaxed">"{aventure.context_histoire}"</p>
-                                    </div>
-                                </div>
-                            )}
+                            </div>
+                        ))
+                    ) : (
+                        <div class="flex-1 flex items-center justify-center">
+                            <p class="text-slate-500 font-medium">
+                                Aucun dialogue trouvé pour ce chapitre.
+                            </p>
                         </div>
-                    ))
-                ) : (
-                    <p class="p-10 text-center text-slate-500">Aucun dialogue trouvé.</p>
-                )}
+                    )
+                }
             </div>
 
-            <div class="p-6 mt-auto flex justify-between items-center border-t border-slate-100">
-                <button id="prev-btn" class="px-6 py-3 bg-slate-100 rounded-2xl font-bold text-slate-600 disabled:opacity-30">Précédent</button>
-                <span id="completion-text" class="font-bold text-slate-400">1 / {aventures.length}</span>
-                <button id="next-btn" class="px-6 py-3 bg-cyan-400 text-white rounded-2xl font-bold disabled:opacity-30">Suivant</button>
+            <div
+                class="p-4 md:p-6 mt-auto flex justify-between items-center border-t border-slate-100 bg-white shrink-0 z-30"
+            >
+                <button
+                    type="button"
+                    id="prev-btn"
+                    class="px-6 py-3 bg-slate-100 rounded-2xl font-bold text-slate-600 transition-all hover:bg-slate-200 active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
+                >
+                    Précédent
+                </button>
+
+                <span
+                    id="completion-text"
+                    class="font-bold text-slate-400 text-sm"
+                >
+                    1 / {aventures.length}
+                </span>
+
+                <button
+                    type="button"
+                    id="next-btn"
+                    class="px-6 py-3 bg-cyan-400 text-white rounded-2xl font-bold transition-all hover:bg-cyan-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
+                >
+                    Suivant
+                </button>
             </div>
         </div>
     </main>
 </Layout>
 
 <script>
-    let currentIndex = 0;
-    const dialogues = document.querySelectorAll(".aventure-dialogue");
-    const total = dialogues.length;
+    document.addEventListener("DOMContentLoaded", () => {
+        let currentIndex = 0;
+        const dialogues = document.querySelectorAll(".aventure-dialogue");
+        const total = dialogues.length;
 
-    function showDialogue(index: number) {
-        dialogues.forEach((d, i) => {
-            const el = d as HTMLElement;
-            el.style.display = (i === index) ? "flex" : "none";
-        });
-        
-        currentIndex = index;
         const compText = document.getElementById("completion-text");
-        if(compText) compText.textContent = `${currentIndex + 1} / ${total}`;
-        
-        const nextBtn = document.getElementById("next-btn") as HTMLButtonElement;
-        const prevBtn = document.getElementById("prev-btn") as HTMLButtonElement;
-        
-        if(nextBtn) nextBtn.style.visibility = (index === 12 || index === 13) ? "hidden" : "visible";
-        if(prevBtn) prevBtn.disabled = (index === 0);
-    }
+        const nextBtn = document.getElementById(
+            "next-btn",
+        ) as HTMLButtonElement;
+        const prevBtn = document.getElementById(
+            "prev-btn",
+        ) as HTMLButtonElement;
 
-    // Gestion propre des clics avec delegation
-    document.addEventListener("click", (e) => {
-        const target = e.target as HTMLElement;
-        const correctBtn = document.getElementById("btn-correct");
-        const wrongBtn = document.getElementById("btn-wrong");
+        if (total === 0) return;
 
-        if (target.closest("#btn-correct")) {
-            correctBtn?.classList.replace("border-slate-200", "border-green-500");
-            setTimeout(() => showDialogue(14), 800);
-        } else if (target.closest("#btn-wrong")) {
-            wrongBtn?.classList.replace("border-slate-200", "border-red-500");
-            correctBtn?.classList.replace("border-slate-200", "border-green-500");
-            setTimeout(() => showDialogue(13), 800);
+        function showDialogue(index: number) {
+            dialogues.forEach((d, i) => {
+                if (i === index) {
+                    d.classList.remove("hidden");
+                    d.classList.add("flex");
+                } else {
+                    d.classList.add("hidden");
+                    d.classList.remove("flex");
+                }
+            });
+
+            currentIndex = index;
+
+            // Mise à jour de la pagination
+            if (compText)
+                compText.textContent = `${currentIndex + 1} / ${total}`;
+
+            // Gestion de l'état des boutons de navigation
+            if (prevBtn) prevBtn.disabled = index === 0;
+
+            if (nextBtn) {
+                // Cacher le bouton "Suivant" sur les étapes de choix (12) et d'erreur (13)
+                if (index === 12 || index === 13) {
+                    nextBtn.classList.add("invisible");
+                } else {
+                    nextBtn.classList.remove("invisible");
+                }
+            }
         }
-    });
 
-    document.getElementById("prev-btn")?.addEventListener("click", () => {
-        if (currentIndex > 0) showDialogue(--currentIndex);
-    });
-    
-    document.getElementById("next-btn")?.addEventListener("click", () => {
-        if (currentIndex === total - 1) {
-            window.location.href = "/aventure";
-        } else if (currentIndex < total - 1) {
-            showDialogue(++currentIndex);
-        }
-    });
+        // Gestion du choix interactif (index 12)
+        document.addEventListener("click", (e) => {
+            const target = e.target as HTMLElement;
+            const correctBtn = document.getElementById("btn-correct");
+            const wrongBtn = document.getElementById("btn-wrong");
 
-    if (total > 0) showDialogue(0);
+            if (target.closest("#btn-correct")) {
+                correctBtn?.classList.replace(
+                    "border-slate-200",
+                    "border-emerald-500",
+                );
+                correctBtn?.classList.add("bg-emerald-50");
+
+                // Désactiver les clics pour éviter que l'utilisateur clique 2 fois
+                if (correctBtn) correctBtn.style.pointerEvents = "none";
+                if (wrongBtn) wrongBtn.style.pointerEvents = "none";
+
+                setTimeout(() => showDialogue(14), 800);
+            } else if (target.closest("#btn-wrong")) {
+                wrongBtn?.classList.replace(
+                    "border-slate-200",
+                    "border-red-500",
+                );
+                wrongBtn?.classList.add("bg-red-50");
+                correctBtn?.classList.replace(
+                    "border-slate-200",
+                    "border-emerald-500",
+                );
+
+                if (correctBtn) correctBtn.style.pointerEvents = "none";
+                if (wrongBtn) wrongBtn.style.pointerEvents = "none";
+
+                setTimeout(() => showDialogue(13), 800);
+            }
+        });
+
+        // Écouteurs pour la navigation
+        prevBtn?.addEventListener("click", () => {
+            if (currentIndex > 0) showDialogue(--currentIndex);
+        });
+
+        nextBtn?.addEventListener("click", () => {
+            if (currentIndex === total - 1) {
+                window.location.href = "/aventure";
+            } else if (currentIndex < total - 1) {
+                showDialogue(++currentIndex);
+            }
+        });
+
+        // Initialisation
+        showDialogue(0);
+    });
 </script>
